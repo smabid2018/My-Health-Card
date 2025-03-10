@@ -176,11 +176,6 @@ class Appointment(models.Model):
     patient = models.ForeignKey(Patient, on_delete=models.CASCADE)
     doctor = models.ForeignKey(Doctor, on_delete=models.CASCADE)
     appointment_date = models.DateTimeField(auto_now_add=True)
-    chief_complain = models.TextField(blank=True, null=True)
-    physical_exam = models.TextField(blank=True, null=True)
-    ongoing_medication = models.TextField(blank=True, null=True)
-    previous_diagnosis = models.TextField(blank=True, null=True)
-    prescriptions = models.TextField(blank=True, null=True)
     status = models.CharField(max_length=20, default='pending')
 
     def __str__(self):
