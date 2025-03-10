@@ -1,10 +1,10 @@
-from django.shortcuts import render, HttpResponse, redirect
+from django.shortcuts import render, HttpResponse, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from .models import Patient, Doctor, AdminProxy, NurseProxy, LabTechProxy, RadiographerProxy, User, Appointment  # Add other models as needed
 
-# Create your views here.
+# views logic.
 
 def home(request):
     return render(request, "drdash.html")
@@ -17,11 +17,6 @@ def loa(request):
 
 # def admindash(request):
 #     return render(request, "admindash.html")
-
-
-
-def vitalsentry(request):
-    return render(request, "vitalsentry.html")
 
 def radnewreq(request):
     return render(request, "radnewreq.html")
@@ -50,14 +45,71 @@ def techreqdetails(request):
 
 @login_required
 def doctor_dashboard(request):
-    doctor = Doctor.objects.get(user=request.user)
-    context = {
-        'user': request.user,
-        'doctor': doctor,
-        # 'upcoming_appointments': doctor.appointment_set.filter(status='scheduled'),
-        # 'patients': doctor.patients.all()
-    }
-    return render(request, 'drdash.html', context)
+    try:
+        # Get the doctor object
+        doctor = Doctor.objects.get(user=request.user)
+        
+        # Count new appointments for this doctor
+        new_appointments_count = Appointment.objects.filter(
+            doctor=doctor, 
+            status='pending'
+        ).count()
+        
+        # Get total appointments for this doctor
+        total_appointments_count = Appointment.objects.filter(doctor=doctor).count()
+        
+        # Get recovered patients count (assuming you mark appointments as 'completed' when recovered)
+        recovered_patients_count = Appointment.objects.filter(
+            doctor=doctor, 
+            status='completed'
+        ).count()
+        
+        # Get referred patients count (assuming you have a 'referred' status in appointments)
+        referred_patients_count = Appointment.objects.filter(
+            doctor=doctor, 
+            status='referred'
+        ).count()
+        
+        # Get new appointments for this doctor
+        new_appointments = Appointment.objects.filter(
+            doctor=doctor,
+            status='pending'
+        ).select_related('patient', 'patient__user').order_by('-appointment_date')[:10]
+        
+        # Get recent patients for this doctor - simplified approach
+        recent_appointments = Appointment.objects.filter(
+            doctor=doctor
+        ).order_by('-appointment_date')[:10]
+            
+        # Get unique patients using a simpler approach
+        seen_patients = set()
+        recent_patients = []
+        
+        for appt in recent_appointments:
+            if appt.patient_id not in seen_patients and len(recent_patients) < 3:
+                seen_patients.add(appt.patient_id)
+                patient = appt.patient
+                # Set a temporary attribute for display purposes
+                patient.diagnosis = appt.chief_complain if appt.chief_complain else "Not specified"
+                recent_patients.append(patient)
+        
+        context = {
+            'user': request.user,
+            'doctor': doctor,
+            'new_appointments_count': new_appointments_count,
+            'total_appointments_count': total_appointments_count,
+            'recovered_patients_count': recovered_patients_count,
+            'referred_patients_count': referred_patients_count,
+            'new_appointments': new_appointments,
+            'recent_patients': recent_patients,
+        }
+        return render(request, 'drdash.html', context)
+    except Doctor.DoesNotExist:
+        messages.error(request, 'Doctor profile not found')
+        return redirect('login')
+    except Exception as e:
+        messages.error(request, f'Error accessing dashboard: {str(e)}')
+        return redirect('login')
 
 @login_required
 def admin_dashboard(request):
@@ -133,13 +185,40 @@ def newappointment(request):
 
 @login_required
 def nursedash(request):
+    # Get the nurse instance from the proxy model
     nurse = NurseProxy.objects.get(id=request.user.id)
+    
+    # Retrieve pending appointments ordered by appointment_date (newest first)
+    pending_appointments = Appointment.objects.filter(status='pending').order_by('-appointment_date')
+    print(f'Pending appointments: {pending_appointments}')
+    # Optionally, you can still pass patients if needed elsewhere in your template
+    patients = Patient.objects.all()
+    
     context = {
         'user': request.user,
         'nurse': nurse,
-        'patients': Patient.objects.all()
+        'patients': patients,
+        'pending_appointments': pending_appointments,
     }
     return render(request, "nursedash.html", context)
+
+@login_required
+def vitalsentry(request):
+    # Retrieve the appointment_id from the GET parameters
+    appointment_id = request.GET.get('appointment_id')
+    if appointment_id:
+        # Retrieve the appointment object (or return 404 if not found)
+        appointment = get_object_or_404(Appointment, appointment_id=appointment_id)
+        context = {
+            'appointment': appointment,
+            'patient': appointment.patient,
+            'doctor': appointment.doctor,
+        }
+    else:
+        context = {}
+    
+    return render(request, "vitalsentry.html", context)
+
 
 @login_required
 def techdash(request):
