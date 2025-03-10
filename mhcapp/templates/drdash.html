@@ -1,287 +1,241 @@
 {% extends 'drbase.html' %}
 {% block pagecontent %}
-                <!-- Begin Page Content -->
-                <div class="container-fluid">
+<!-- Begin Page Content -->
+<div class="container-fluid">
 
-                    <!-- Page Heading -->
-                    <div class="d-sm-flex align-items-lg-start  mb-4">
-                        <h1 class="h3 mb-0 text-gray-800">Good Morning, Dr Ashish</h1>
-                    </div>
+    <!-- Page Heading -->
+    <div class="d-sm-flex align-items-lg-start mb-4">
+        <h1 class="h3 mb-0 text-gray-800">
+            Good 
+            {% now "H" as current_hour %}
+            {% if current_hour|add:"0" < 12 %}
+                Morning
+            {% elif current_hour|add:"0" < 17 %}
+                Afternoon
+            {% else %}
+                Evening
+            {% endif %}, 
+            Dr {{ doctor.user.name }}
+        </h1>
+    </div>
 
-                    <!-- Content Row -->
-                    <div class="row">
-
-                        <!-- Earnings (Monthly) Card Example -->
-                        <div class="col-xl-3 col-md-6 mb-4">
-                            <div class="card border-left-primary shadow h-100 py-2">
-                                <div class="card-body">
-                                    <div class="row no-gutters align-items-center">
-                                        <div class="col mr-2">
-                                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
-                                                New Appoinments</div>
-                                            <div class="h5 mb-0 font-weight-bold text-gray-800">20</div>
-                                        </div>
-                                        <div class="col-auto">
-                                            <i class="fas fa-calendar fa-2x text-gray-300"></i>
-                                        </div>
-                                    </div>
-                                </div>
+    <!-- Summary Cards Row -->
+    <div class="row">
+        <!-- New Appointments Card -->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-primary shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                New Appointments
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                {{ new_appointments_count }}
                             </div>
                         </div>
-
-                        <!-- Earnings (Monthly) Card Example -->
-                        <div class="col-xl-3 col-md-6 mb-4">
-                            <div class="card border-left-success shadow h-100 py-2">
-                                <div class="card-body">
-                                    <div class="row no-gutters align-items-center">
-                                        <div class="col mr-2">
-                                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
-                                                Total Appointments</div>
-                                            <div class="h5 mb-0 font-weight-bold text-gray-800">3323</div>
-                                        </div>
-                                        <div class="col-auto">
-                                            <i class="fas fa-dollar-sign fa-2x text-gray-300"></i>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- recovered patient details -->
-                        <div class="col-xl-3 col-md-6 mb-4">
-                            <div class="card border-left-info shadow h-100 py-2">
-                                <div class="card-body">
-                                    <div class="row no-gutters align-items-center">
-                                        <div class="col mr-2">
-                                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">Recovered
-                                            </div>
-                                            <div class="row no-gutters align-items-center">
-                                                <div class="col-auto">
-                                                    <div class="h5 mb-0 mr-3 font-weight-bold text-gray-800">2280</div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="col-auto">
-                                            <i class="fas fa-clipboard-list fa-2x text-gray-300"></i>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Pending Requests Card Example -->
-                        <div class="col-xl-3 col-md-6 mb-4">
-                            <div class="card border-left-warning shadow h-100 py-2">
-                                <div class="card-body">
-                                    <div class="row no-gutters align-items-center">
-                                        <div class="col mr-2">
-                                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
-                                                Reffered</div>
-                                            <div class="h5 mb-0 font-weight-bold text-gray-800">18</div>
-                                        </div>
-                                        <div class="col-auto">
-                                            <i class="fas fa-comments fa-2x text-gray-300"></i>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
+                        <div class="col-auto">
+                            <i class="fas fa-calendar fa-2x text-gray-300"></i>
                         </div>
                     </div>
-
-                    <!-- Content Row -->
-
-                    <div class="row">
-
-                        <!-- Area Chart -->
-                        <div class="col-xl-8 col-lg-7">
-                            <div class="card shadow mb-4">
-                                <!-- Card Header - Dropdown -->
-                                <div
-                                    class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                                    <h6 class="m-0 font-weight-bold text-primary">New Appointments</h6>
-                                    <div class="dropdown no-arrow">
-                                        <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuLink"
-                                            data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                            <i class="fas fa-ellipsis-v fa-sm fa-fw text-gray-400"></i>
-                                        </a>
-                                        <div class="dropdown-menu dropdown-menu-right shadow animated--fade-in"
-                                            aria-labelledby="dropdownMenuLink">
-                                            <div class="dropdown-header">Dropdown Header:</div>
-                                            <a class="dropdown-item" href="#">Action</a>
-                                            <a class="dropdown-item" href="#">Another action</a>
-                                            <div class="dropdown-divider"></div>
-                                            <a class="dropdown-item" href="#">Something else here</a>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="table-responsive">
-                                <table class="table table-bordered" id="dataTable" >
-                                    <thead>
-                                        <tr>
-                                            <th>Patient ID</th>
-                                            <th>Name</th>
-                                            <th>Gender</th>
-                                            <th>Age</th>
-                                            <th>Address</th>
-                                            <th>Complain</th>
-                                        </tr>
-                                    </thead>
-                                    <tfoot>
-                                        <tr>
-                                            <th>Patient ID</th>
-                                            <th>Name</th>
-                                            <th>Gender</th>
-                                            <th>Age</th>
-                                            <th>Address</th>
-                                            <th>Complain</th>
-                                        </tr>
-                                    </tfoot>
-                                    <tbody>
-                                        <tr>
-                                            <td>001</td>
-                                            <td>John Doe</td>
-                                            <td>Male</td>
-                                            <td>45</td>
-                                            <td>123 Elm Street, NY</td>
-                                            <td>Fever</td>
-                                        </tr>
-                                        <tr>
-                                            <td>002</td>
-                                            <td>Jane Smith</td>
-                                            <td>Female</td>
-                                            <td>32</td>
-                                            <td>456 Oak Avenue, CA</td>
-                                            <td>Headache</td>
-                                        </tr>
-                                        <tr>
-                                            <td>003</td>
-                                            <td>Robert Brown</td>
-                                            <td>Male</td>
-                                            <td>27</td>
-                                            <td>789 Maple Road, TX</td>
-                                            <td>Cough</td>
-                                        </tr>
-                                        <tr>
-                                            <td>004</td>
-                                            <td>Emily Davis</td>
-                                            <td>Female</td>
-                                            <td>54</td>
-                                            <td>101 Pine Lane, FL</td>
-                                            <td>Back Pain</td>
-                                        </tr>
-                                        <tr>
-                                            <td>005</td>
-                                            <td>Michael Johnson</td>
-                                            <td>Male</td>
-                                            <td>63</td>
-                                            <td>202 Birch Court, IL</td>
-                                            <td>Shortness of Breath</td>
-                                        </tr>
-                                        <tr>
-                                            <td>006</td>
-                                            <td>Sarah Wilson</td>
-                                            <td>Female</td>
-                                            <td>38</td>
-                                            <td>303 Cedar Way, WA</td>
-                                            <td>Allergies</td>
-                                        </tr>
-                                        <tr>
-                                            <td>007</td>
-                                            <td>David Lee</td>
-                                            <td>Male</td>
-                                            <td>50</td>
-                                            <td>404 Walnut Drive, PA</td>
-                                            <td>Chest Pain</td>
-                                        </tr>
-                                        <tr>
-                                            <td>008</td>
-                                            <td>Laura Martinez</td>
-                                            <td>Female</td>
-                                            <td>29</td>
-                                            <td>505 Spruce Street, AZ</td>
-                                            <td>Fatigue</td>
-                                        </tr>
-                                        <tr>
-                                            <td>009</td>
-                                            <td>James Anderson</td>
-                                            <td>Male</td>
-                                            <td>41</td>
-                                            <td>606 Cypress Ave, NV</td>
-                                            <td>Dizziness</td>
-                                        </tr>
-                                        <tr>
-                                            <td>010</td>
-                                            <td>Olivia Taylor</td>
-                                            <td>Female</td>
-                                            <td>36</td>
-                                            <td>707 Willow Blvd, CO</td>
-                                            <td>Stomach Pain</td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                                </div>
-
-                            </div>
-
-                        </div>
-
-
-                        <!-- Pie Chart -->
-                        <div class="col-xl-4 col-lg-5">
-                            <div class="card shadow mb-4">
-                                <!-- Card Header - Dropdown -->
-                                <div
-                                    class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                                    <h6 class="m-0 font-weight-bold text-primary">Recent Patients</h6>
-                                    <div class="dropdown no-arrow">
-                                        <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuLink"
-                                            data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                            <i class="fas fa-ellipsis-v fa-sm fa-fw text-gray-400"></i>
-                                        </a>
-                                        <div class="dropdown-menu dropdown-menu-right shadow animated--fade-in"
-                                            aria-labelledby="dropdownMenuLink">
-                                            <div class="dropdown-header">Dropdown Header:</div>
-                                            <a class="dropdown-item" href="#">Action</a>
-                                            <a class="dropdown-item" href="#">Another action</a>
-                                            <div class="dropdown-divider"></div>
-                                            <a class="dropdown-item" href="#">Something else here</a>
-                                        </div>
-                                    </div>
-                                </div>
-                                <!-- Card Body -->
-                                <div class="card-body">
-                                    <table class="table table-borderless">
-                                      <thead>
-                                        <tr>
-                                          <th scope="col">PID</th>
-                                          <th scope="col">Name</th>
-                                          <th scope="col">DD</th>
-                                        </tr>
-                                      </thead>
-                                      <tbody>
-                                        <tr>
-                                          <th scope="row">1</th>
-                                          <td>Mark</td>
-                                          <td>@mdo</td>
-                                        </tr>
-                                        <tr>
-                                          <th scope="row">2</th>
-                                          <td>Thornton</td>
-                                          <td>@fat</td>
-                                        </tr>
-                                        <tr>
-                                          <th scope="row">3</th>
-                                          <td>Larry the Bird</td>
-                                          <td>@twitter</td>
-                                        </tr>
-                                      </tbody>
-                                    </table>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-
                 </div>
-                <!-- /.container-fluid -->
+            </div>
+        </div>
+
+        <!-- Total Appointments Card -->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-success shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                Total Appointments
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                {{ total_appointments_count }}
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-dollar-sign fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recovered Patients Card -->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-info shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                                Recovered
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                {{ recovered_patients_count }}
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-clipboard-list fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Referred Patients Card -->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-warning shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                Referred
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                {{ referred_patients_count }}
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-comments fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content Row -->
+    <div class="row">
+        <!-- New Appointments Table -->
+        <div class="col-xl-8 col-lg-7">
+            <div class="card shadow mb-4">
+                <!-- Card Header with Dropdown -->
+                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                    <h6 class="m-0 font-weight-bold text-primary">New Appointments</h6>
+                    <div class="dropdown no-arrow">
+                        <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuLink"
+                           data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            <i class="fas fa-ellipsis-v fa-sm fa-fw text-gray-400"></i>
+                        </a>
+                        <div class="dropdown-menu dropdown-menu-right shadow animated--fade-in"
+                             aria-labelledby="dropdownMenuLink">
+                            <div class="dropdown-header">Dropdown Header:</div>
+                            <a class="dropdown-item" href="#">Action</a>
+                            <a class="dropdown-item" href="#">Another action</a>
+                            <div class="dropdown-divider"></div>
+                            <a class="dropdown-item" href="#">Something else here</a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Table Body -->
+                <div class="table-responsive">
+                    <table class="table table-bordered" id="dataTable">
+                        <thead>
+                            <tr>
+                                <th>Patient ID</th>
+                                <th>Name</th>
+                                <th>Gender</th>
+                                <th>Age</th>
+                                <th>Address</th>
+                                <th>Complain</th>
+                            </tr>
+                        </thead>
+                        <tfoot>
+                            <tr>
+                                <th>Patient ID</th>
+                                <th>Name</th>
+                                <th>Gender</th>
+                                <th>Age</th>
+                                <th>Address</th>
+                                <th>Complain</th>
+                            </tr>
+                        </tfoot>
+                        <tbody>
+                            {% if new_appointments %}
+                                {% for appointment in new_appointments %}
+                                    <tr>
+                                        <td>{{ appointment.patient.user.custom_id }}</td>
+                                        <td>{{ appointment.patient.user.name }}</td>
+                                        <td>
+                                            {% if appointment.patient.gender == 'M' %}
+                                                Male
+                                            {% elif appointment.patient.gender == 'F' %}
+                                                Female
+                                            {% else %}
+                                                Other
+                                            {% endif %}
+                                        </td>
+                                        <td>{{ appointment.patient.age }}</td>
+                                        <td>{{ appointment.patient.address }}</td>
+                                        <td>{{ appointment.chief_complain|default:"Not specified" }}</td>
+                                    </tr>
+                                {% endfor %}
+                            {% else %}
+                                <tr>
+                                    <td colspan="6" class="text-center">No new appointments available</td>
+                                </tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Patients Table -->
+        <div class="col-xl-4 col-lg-5">
+            <div class="card shadow mb-4">
+                <!-- Card Header with Dropdown -->
+                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                    <h6 class="m-0 font-weight-bold text-primary">Recent Patients</h6>
+                    <div class="dropdown no-arrow">
+                        <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuLink"
+                           data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            <i class="fas fa-ellipsis-v fa-sm fa-fw text-gray-400"></i>
+                        </a>
+                        <div class="dropdown-menu dropdown-menu-right shadow animated--fade-in"
+                             aria-labelledby="dropdownMenuLink">
+                            <div class="dropdown-header">Dropdown Header:</div>
+                            <a class="dropdown-item" href="#">Action</a>
+                            <a class="dropdown-item" href="#">Another action</a>
+                            <div class="dropdown-divider"></div>
+                            <a class="dropdown-item" href="#">Something else here</a>
+                        </div>
+                    </div>
+                </div>
+                <!-- Card Body -->
+                <div class="card-body">
+                    <table class="table table-borderless">
+                        <thead>
+                            <tr>
+                                <th scope="col">PID</th>
+                                <th scope="col">Name</th>
+                                <th scope="col">Complain</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% if recent_patients %}
+                                {% for patient in recent_patients %}
+                                    <tr>
+                                        <th scope="row">{{ patient.user.custom_id }}</th>
+                                        <td>{{ patient.user.name }}</td>
+                                        <td>{{ patient.diagnosis }}</td>
+                                    </tr>
+                                {% endfor %}
+                            {% else %}
+                                <tr>
+                                    <td colspan="3" class="text-center">No recent patients</td>
+                                </tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+<!-- /.container-fluid -->
 {% endblock %}
