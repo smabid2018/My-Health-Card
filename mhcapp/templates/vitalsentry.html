@@ -1,129 +1,284 @@
 {% extends 'nurseleftsection.html' %}
 {% block pagecontent %}
-    <div class="main-container" style="display: flex; flex-wrap: wrap; gap: 20px; padding: 20px; justify-content: space-between;">
-
-        <div class="left-section" style="flex: 1; min-width: 300px;">
-            <!-- Patient Vitals Section -->
-            <div class="patient-vitals" style="padding: 20px; background: #f9f9f9; border-radius: 10px; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); margin-bottom: 20px;">
-                <h3 class="section-title" style="border-bottom: 2px solid #4f1915; padding-bottom: 10px;">Patient Vitals</h3>
-                <ul class="vitals-list" style="list-style-type: none; padding: 0;">
-                    <li><strong>Blood Pressure:</strong> <input type="text" id="bp" value="120/80 mmHg"></li>
-                    <li><strong>SpO2:</strong> <input type="text" id="spo2" value="98% O2 Sat"></li>
-                    <li><strong>Heart Rate:</strong> <input type="text" id="hr" value="75 BPM"></li>
-                    <li><strong>Respiratory Rate:</strong> <input type="text" id="rr" value="16 br/min"></li>
-                </ul>
-                <div style="display: flex; gap: 10px;">
-                    <button type="button" onclick="clearVitals()">Clear</button>
-                    <button type="button" onclick="addVitals()">Add</button>
+<div class="main-container">
+    <div class="row">
+        <!-- Left Section for Forms -->
+        <div class="col-lg-8 col-md-7 mb-4">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 bg-primary">
+                    <h6 class="m-0 font-weight-bold text-white">Patient Vitals Entry</h6>
                 </div>
-            </div>
+                <div class="card-body">
+                    <form id="vitalsForm" action="{% url 'vitalsentry' %}" method="POST">
+                        {% csrf_token %}
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="bp" class="form-label">Blood Pressure (mmHg)</label>
+                                <div class="input-group">
+                                    <input type="text" class="form-control" id="bp-systolic" placeholder="Systolic">
+                                    <span class="input-group-text">/</span>
+                                    <input type="text" class="form-control" id="bp-diastolic" placeholder="Diastolic">
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="pulse" class="form-label">Pulse Rate (BPM)</label>
+                                <input type="number" class="form-control" id="pulse" placeholder="Pulse rate">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="spo2" class="form-label">SpO2 (%)</label>
+                                <div class="input-group">
+                                    <input type="number" class="form-control" id="spo2" placeholder="Oxygen saturation">
+                                    <span class="input-group-text">%</span>
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="respiratory" class="form-label">Respiratory Rate (breaths/min)</label>
+                                <input type="number" class="form-control" id="respiratory" placeholder="Respiratory rate">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="temperature" class="form-label">Temperature (°C)</label>
+                                <div class="input-group">
+                                    <input type="number" step="0.1" class="form-control" id="temperature" placeholder="Temperature">
+                                    <span class="input-group-text">°C</span>
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="weight" class="form-label">Weight (kg)</label>
+                                <div class="input-group">
+                                    <input type="number" step="0.1" class="form-control" id="weight" placeholder="Weight">
+                                    <span class="input-group-text">kg</span>
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="height" class="form-label">Height (cm)</label>
+                                <div class="input-group">
+                                    <input type="number" class="form-control" id="height" placeholder="Height">
+                                    <span class="input-group-text">cm</span>
+                                </div>
+                            </div>
+                        </div>
 
-            <!-- Patient Details Section -->
-            <div class="patient-details" style="padding: 20px; background: #f9f9f9; border-radius: 10px; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);">
-                <h3 class="section-title" style="border-bottom: 2px solid #4f1915; padding-bottom: 10px;">Patient Details</h3>
-                <ul class="details-list" style="list-style-type: none; padding: 0;">
-                    <li><strong>Physical Exam:</strong>
-                        <ul>
-                            <li><input type="text" id="general" value="Well nourished, well developed"></li>
-                            <li><input type="text" id="cvs" value="S1S2 heard, no murmurs"></li>
-                            <li><input type="text" id="rs" value="Clear breath sounds"></li>
-                            <li><input type="text" id="abdomen" value="Soft, non-tender"></li>
-                        </ul>
-                    </li>
-                    <li><strong>Diagnosis:</strong>
-                        <ul>
-                            <li><input type="text" id="diagnosis1" value="Acute Bronchitis"></li>
-                            <li><input type="text" id="diagnosis2" value="Acute Sinusitis"></li>
-                        </ul>
-                    </li>
-                    <li><strong>Ongoing Medications:</strong>
-                        <ul>
-                            <li><input type="text" id="medication1" value="Tab. Paracetamol PO TDS for 3 days"></li>
-                            <li><input type="text" id="medication2" value="Cap. Amoxicillin PO BD for 5 days"></li>
-                            <li><input type="text" id="medication3" value="Syr. Cough Expectorant 10ml TDS"></li>
-                        </ul>
-                    </li>
-                    <li><strong>Previous Diagnoses:</strong>
-                        <ul>
-                            <li><input type="text" id="prevDiagnosis1" value="Type II Diabetes with Ulcer"></li>
-                            <li><input type="text" id="prevDiagnosis2" value="Hypertension"></li>
-                            <li><input type="text" id="prevDiagnosis3" value="Asthma"></li>
-                        </ul>
-                    </li>
-                    <li><strong>Chief Complaint:</strong> <input type="text" id="complaint" value="Cough with sputum"></li>
-                    <li><strong>Duration:</strong> <input type="text" id="duration" value="3 days"></li>
-                    <li><strong>Severity:</strong> <input type="text" id="severity" value="Moderate"></li>
-                </ul>
-                <div style="display: flex; gap: 10px;">
-                    <button type="button" onclick="clearDetails()">Clear</button>
-                    <button type="button" onclick="addDetails()">Add</button>
+                        <div class="mb-3">
+                            <label for="allergies" class="form-label">Allergies</label>
+                            <select class="form-select" id="allergies" name="allergies[]" multiple="multiple" aria-label="Allergies" data-placeholder="Select allergies or type to add new">
+                                <option value="None">None</option>
+                                <option value="Penicillin">Penicillin</option>
+                                <option value="Peanuts">Peanuts</option>
+                                <option value="Shellfish">Shellfish</option>
+                                <option value="Eggs">Eggs</option>
+                                <option value="Dairy">Dairy</option>
+                                <option value="Latex">Latex</option>
+                                <option value="Ibuprofen">Ibuprofen</option>
+                                <option value="Aspirin">Aspirin</option>
+                            </select>
+                            <small class="text-muted">Hold Ctrl/Cmd to select multiple or type to add custom allergies</small>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="notes" class="form-label">Additional Notes</label>
+                            <textarea class="form-control" id="notes" name="notes" rows="3" placeholder="Any additional information about the patient's condition"></textarea>
+                        </div>
+
+                        <div class="d-flex justify-content-between">
+                            <button type="button" class="btn btn-danger" onclick="clearForm()">
+                                <i class="fas fa-eraser"></i> Clear Form
+                            </button>
+                            <button type="submit" class="btn btn-success">
+                                <i class="fas fa-save"></i> Save Vitals
+                            </button>
+                        </div>
+                    </form>
                 </div>
             </div>
         </div>
 
-        <!-- Patient Profile Section -->
-        <div class="right-section" style="flex: 0.4; min-width: 300px; background-color: #96dbe4; padding: 20px; border-radius: 10px; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); align-self: flex-start;">
-            <div class="profile-card">
-                <div class="card-header bg-dark text-white" style="text-align: center; padding: 10px; border-radius: 5px;">
-                    <h6>Patient Profile</h6>
+        <!-- Right Section for Patient Profile -->
+        <div class="col-lg-4 col-md-5 mb-4">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 bg-gradient-primary text-white text-center">
+                    <h6 class="m-0 font-weight-bold">Patient Profile</h6>
                 </div>
-                <div class="profile-header" style="display:flex; flex-direction:column; justify-content: center; align-items: center; padding: 20px;">
-                    <img src="/static/resource/abid.jpg" alt="Profile Picture" class="profile-pic" style="width: 100px; height: 100px; border-radius: 50%;">
-                    <div>
-                        <h6 class="mb-0">John Doe</h6>
-                        <p class="mb-0">Patient ID: 12345</p>
+                <div class="card-body text-center">
+                    <div class="patient-avatar mb-3">
+                        <img src="/static/resource/abid.jpg" alt="Patient Photo" class="img-profile rounded-circle shadow" style="width: 150px; height: 150px; object-fit: cover; border: 4px solid #4e73df;">
+                    </div>
+                    <h5 class="patient-name">{{ patient.user.name|default:"John Doe" }}</h5>
+                    <p class="patient-id mb-3">ID: {{ patient.user.custom_id|default:"PAT001" }}</p>
+                    
+                    <div class="patient-details text-left">
+                        <div class="row mb-2">
+                            <div class="col-5 font-weight-bold text-primary">Age:</div>
+                            <div class="col-7">{{ patient.age|default:"45" }} years</div>
+                        </div>
+                        <div class="row mb-2">
+                            <div class="col-5 font-weight-bold text-primary">Gender:</div>
+                            <div class="col-7">
+                                {% if patient.gender == 'M' %}Male{% elif patient.gender == 'F' %}Female{% else %}Male{% endif %}
+                            </div>
+                        </div>
+                        <div class="row mb-2">
+                            <div class="col-5 font-weight-bold text-primary">Blood Type:</div>
+                            <div class="col-7">{{ patient.blood_type|default:"N/A" }}</div>
+                        </div>
+                        <div class="row mb-2">
+                            <div class="col-5 font-weight-bold text-primary">Contact:</div>
+                            <div class="col-7">{{ patient.user.phone|default:"+1-555-123-4567" }}</div>
+                        </div>
+                        <div class="row mb-2">
+                            <div class="col-5 font-weight-bold text-primary">Address</div>
+                            <div class="col-7">{{ patient.address|default:"123 Main St, New York, NY" }}</div>
+                        </div>
+
+                    </div>
+
+                    <hr>
+                    
+                    <hr>
+                    <div class="d-flex justify-content-between">
+                        <button class="btn btn-sm btn-primary">
+                            <i class="fas fa-file-medical"></i> Medical History
+                        </button>
+                        <button class="btn btn-sm btn-info">
+                            <i class="fas fa-notes-medical"></i> View Notes
+                        </button>
                     </div>
                 </div>
-                <h6 class="text-muted" style="border-bottom: 1px solid #4f1915; padding-bottom: 5px;">Details</h6>
-                <ul class="list-unstyled">
-                    <li>Age: 45</li>
-                    <li>Gender: Male</li>
-                    <li>Height: 5'8"</li>
-                    <li>Weight: 70kg</li>
-                </ul>
-                <h6 class="text-muted mt-3" style="border-bottom: 1px solid #4f1915; padding-bottom: 5px;">Allergies</h6>
-                <ul class="list-unstyled">
-                    <li>Penicillin</li>
-                    <li>Peanuts</li>
-                </ul>
+            </div>
+
+            <!-- Latest Appointment Card -->
+            <div class="card shadow">
+                <div class="card-header py-3 bg-gradient-success text-white">
+                    <h6 class="m-0 font-weight-bold">Latest Appointment</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-2">
+                        <div class="col-5 font-weight-bold text-primary">Date:</div>
+                        <div class="col-7">{% now "Y-m-d" %}</div>
+                    </div>
+                    <div class="row mb-2">
+                        <div class="col-5 font-weight-bold text-primary">Doctor:</div>
+                        <div class="col-7">Dr. {{ doctor.user.name|default:"Ashish Kumar" }}</div>
+                    </div>
+                    <div class="row mb-2">
+                        <div class="col-5 font-weight-bold text-primary">Status:</div>
+                        <div class="col-7"><span class="badge bg-success text-white">{{ appointment.status|default:"Scheduled" }}</span></div>
+                    </div>
+                    <div class="text-center mt-3">
+                        <button class="btn btn-sm btn-outline-primary">
+                            <i class="fas fa-calendar-check"></i> Appointment Details
+                        </button>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
+</div>
 
-    <script>
-        function clearVitals() {
-            document.getElementById('bp').value = '';
-            document.getElementById('spo2').value = '';
-            document.getElementById('hr').value = '';
-            document.getElementById('rr').value = '';
-        }
+<!-- Bootstrap 5 CSS if not already included in base template -->
+<!-- <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" /> -->
+<!-- <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script> -->
+<style>
+    /* Custom styles to enhance the form appearance */
+    .main-container {
+        padding: 20px;
+    }
+    
+    .card {
+        border: none;
+        border-radius: 10px;
+        box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15) !important;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
 
-        function addVitals() {
-            alert("Vitals Added!");
-            // You can add the functionality to save or send the data here.
-        }
+    .card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 0.5rem 2rem 0 rgba(58, 59, 69, 0.2) !important;
+    }
 
-        function clearDetails() {
-            document.getElementById('general').value = '';
-            document.getElementById('cvs').value = '';
-            document.getElementById('rs').value = '';
-            document.getElementById('abdomen').value = '';
-            document.getElementById('diagnosis1').value = '';
-            document.getElementById('diagnosis2').value = '';
-            document.getElementById('medication1').value = '';
-            document.getElementById('medication2').value = '';
-            document.getElementById('medication3').value = '';
-            document.getElementById('prevDiagnosis1').value = '';
-            document.getElementById('prevDiagnosis2').value = '';
-            document.getElementById('prevDiagnosis3').value = '';
-            document.getElementById('complaint').value = '';
-            document.getElementById('duration').value = '';
-            document.getElementById('severity').value = '';
-        }
+    .card-header {
+        border-top-left-radius: 10px !important;
+        border-top-right-radius: 10px !important;
+    }
 
-        function addDetails() {
-            alert("Details Added!");
-            // You can add the functionality to save or send the data here.
-        }
-    </script>
+    .form-control, .form-select, .input-group-text {
+        border-radius: 8px;
+        padding: 10px;
+    }
+
+    .form-control:focus, .form-select:focus {
+        border-color: #4e73df;
+        box-shadow: 0 0 0 0.25rem rgba(78, 115, 223, 0.25);
+    }
+
+    .btn {
+        border-radius: 8px;
+        padding: 8px 16px;
+        font-weight: 600;
+        transition: all 0.2s;
+    }
+
+    .btn-success {
+        background-color: #1cc88a;
+        border-color: #1cc88a;
+    }
+    
+    .btn-success:hover {
+        background-color: #17a673;
+        border-color: #169b6b;
+        transform: translateY(-2px);
+    }
+
+    .btn-danger {
+        background-color: #e74a3b;
+        border-color: #e74a3b;
+    }
+    
+    .btn-danger:hover {
+        background-color: #be3e32;
+        border-color: #be3e32;
+        transform: translateY(-2px);
+    }
+
+    .alert {
+        border-radius: 8px;
+    }
+
+    .patient-avatar img {
+        transition: transform 0.3s ease;
+    }
+    
+    .patient-avatar img:hover {
+        transform: scale(1.05);
+    }
+    
+    .table-hover tbody tr:hover {
+        background-color: rgba(78, 115, 223, 0.05);
+    }
+
+    /* Custom animations */
+    .fade-in {
+        animation: fadeIn 0.5s;
+    }
+    
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        $('#allergies').select2({
+            placeholder: "Select allergies or type to add new",
+            allowClear: true,
+            tags: true
+        });
+    });
+
+    function clearForm() {
+        document.getElementById("vitalsForm").reset();
+        document.getElementById("bmi").className = "";
+        document.getElementById("bmi").value = "";
+        $('#allergies').val(null).trigger('change');
+    }
+</script>
 {% endblock %}
