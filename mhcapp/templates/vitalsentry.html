@@ -9,76 +9,122 @@
                     <h6 class="m-0 font-weight-bold text-white">Patient Vitals Entry</h6>
                 </div>
                 <div class="card-body">
+                    {% if messages %}
+                    <div class="messages">
+                        {% for message in messages %}
+                        <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} alert-dismissible fade show" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close" style="height: 25px;color: #c62828; width: 40px;">X</button>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+
                     <form id="vitalsForm" action="{% url 'vitalsentry' %}" method="POST">
                         {% csrf_token %}
+                        <!-- Hidden input for appointment_id -->
+                        <input type="hidden" name="appointment_id" value="{{ appointment_id }}">
+                        
                         <div class="row">
                             <div class="col-md-6 mb-3">
-                                <label for="bp" class="form-label">Blood Pressure (mmHg)</label>
+                                <label for="bp-systolic" class="form-label">Blood Pressure (mmHg)</label>
                                 <div class="input-group">
-                                    <input type="text" class="form-control" id="bp-systolic" placeholder="Systolic">
+                                    <input type="number" class="form-control" id="bp-systolic" name="bp-systolic" 
+                                           placeholder="Systolic" min="70" max="250" 
+                                           value="{% if latest_vitals.systolic_bp %}{{ latest_vitals.systolic_bp }}{% endif %}">
                                     <span class="input-group-text">/</span>
-                                    <input type="text" class="form-control" id="bp-diastolic" placeholder="Diastolic">
+                                    <input type="number" class="form-control" id="bp-diastolic" name="bp-diastolic" 
+                                           placeholder="Diastolic" min="40" max="150" 
+                                           value="{% if latest_vitals.diastolic_bp %}{{ latest_vitals.diastolic_bp }}{% endif %}">
                                 </div>
                             </div>
                             <div class="col-md-6 mb-3">
                                 <label for="pulse" class="form-label">Pulse Rate (BPM)</label>
-                                <input type="number" class="form-control" id="pulse" placeholder="Pulse rate">
+                                <input type="number" class="form-control" id="pulse" name="pulse" 
+                                       placeholder="Pulse rate" min="30" max="220" 
+                                       value="{% if latest_vitals.pulse_rate %}{{ latest_vitals.pulse_rate }}{% endif %}">
                             </div>
                             <div class="col-md-6 mb-3">
                                 <label for="spo2" class="form-label">SpO2 (%)</label>
                                 <div class="input-group">
-                                    <input type="number" class="form-control" id="spo2" placeholder="Oxygen saturation">
+                                    <input type="number" class="form-control" id="spo2" name="spo2" 
+                                           placeholder="Oxygen saturation" min="70" max="100" 
+                                           value="{% if latest_vitals.spo2 %}{{ latest_vitals.spo2 }}{% endif %}">
                                     <span class="input-group-text">%</span>
                                 </div>
                             </div>
                             <div class="col-md-6 mb-3">
                                 <label for="respiratory" class="form-label">Respiratory Rate (breaths/min)</label>
-                                <input type="number" class="form-control" id="respiratory" placeholder="Respiratory rate">
+                                <input type="number" class="form-control" id="respiratory" name="respiratory" 
+                                       placeholder="Respiratory rate" min="8" max="40" 
+                                       value="{% if latest_vitals.respiratory_rate %}{{ latest_vitals.respiratory_rate }}{% endif %}">
                             </div>
                             <div class="col-md-6 mb-3">
                                 <label for="temperature" class="form-label">Temperature (°C)</label>
                                 <div class="input-group">
-                                    <input type="number" step="0.1" class="form-control" id="temperature" placeholder="Temperature">
+                                    <input type="number" step="0.1" class="form-control" id="temperature" name="temperature" 
+                                           placeholder="Temperature" min="35" max="42" 
+                                           value="{% if latest_vitals.temperature %}{{ latest_vitals.temperature }}{% endif %}">
                                     <span class="input-group-text">°C</span>
                                 </div>
                             </div>
                             <div class="col-md-6 mb-3">
                                 <label for="weight" class="form-label">Weight (kg)</label>
                                 <div class="input-group">
-                                    <input type="number" step="0.1" class="form-control" id="weight" placeholder="Weight">
+                                    <input type="number" step="0.1" class="form-control" id="weight" name="weight" 
+                                           placeholder="Weight" min="1" max="300" oninput="calculateBMI()" 
+                                           value="{% if latest_vitals.weight %}{{ latest_vitals.weight }}{% endif %}">
                                     <span class="input-group-text">kg</span>
                                 </div>
                             </div>
                             <div class="col-md-6 mb-3">
                                 <label for="height" class="form-label">Height (cm)</label>
                                 <div class="input-group">
-                                    <input type="number" class="form-control" id="height" placeholder="Height">
+                                    <input type="number" class="form-control" id="height" name="height" 
+                                           placeholder="Height" min="50" max="250" oninput="calculateBMI()" 
+                                           value="{% if latest_vitals.height %}{{ latest_vitals.height }}{% endif %}">
                                     <span class="input-group-text">cm</span>
                                 </div>
                             </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="bmi" class="form-label">BMI</label>
+                                <input type="text" class="form-control" id="bmi" name="bmi" 
+                                       placeholder="Auto calculated" readonly 
+                                       value="{% if latest_vitals.bmi %}{{ latest_vitals.bmi }}{% endif %}">
+                            </div>
                         </div>
-
+                    
                         <div class="mb-3">
                             <label for="allergies" class="form-label">Allergies</label>
-                            <select class="form-select" id="allergies" name="allergies[]" multiple="multiple" aria-label="Allergies" data-placeholder="Select allergies or type to add new">
-                                <option value="None">None</option>
-                                <option value="Penicillin">Penicillin</option>
-                                <option value="Peanuts">Peanuts</option>
-                                <option value="Shellfish">Shellfish</option>
-                                <option value="Eggs">Eggs</option>
-                                <option value="Dairy">Dairy</option>
-                                <option value="Latex">Latex</option>
-                                <option value="Ibuprofen">Ibuprofen</option>
-                                <option value="Aspirin">Aspirin</option>
+                            <select class="form-select" id="allergies" name="allergies[]" multiple="multiple" 
+                                    aria-label="Allergies" data-placeholder="Select allergies or type to add new">
+                                <option value="None" {% if latest_vitals.allergies and 'None' in latest_vitals.allergies %}selected{% endif %}>None</option>
+                                <option value="Penicillin" {% if latest_vitals.allergies and 'Penicillin' in latest_vitals.allergies %}selected{% endif %}>Penicillin</option>
+                                <option value="Peanuts" {% if latest_vitals.allergies and 'Peanuts' in latest_vitals.allergies %}selected{% endif %}>Peanuts</option>
+                                <option value="Shellfish" {% if latest_vitals.allergies and 'Shellfish' in latest_vitals.allergies %}selected{% endif %}>Shellfish</option>
+                                <option value="Eggs" {% if latest_vitals.allergies and 'Eggs' in latest_vitals.allergies %}selected{% endif %}>Eggs</option>
+                                <option value="Dairy" {% if latest_vitals.allergies and 'Dairy' in latest_vitals.allergies %}selected{% endif %}>Dairy</option>
+                                <option value="Latex" {% if latest_vitals.allergies and 'Latex' in latest_vitals.allergies %}selected{% endif %}>Latex</option>
+                                <option value="Ibuprofen" {% if latest_vitals.allergies and 'Ibuprofen' in latest_vitals.allergies %}selected{% endif %}>Ibuprofen</option>
+                                <option value="Aspirin" {% if latest_vitals.allergies and 'Aspirin' in latest_vitals.allergies %}selected{% endif %}>Aspirin</option>
                             </select>
                             <small class="text-muted">Hold Ctrl/Cmd to select multiple or type to add custom allergies</small>
                         </div>
-
+                    
                         <div class="mb-3">
                             <label for="notes" class="form-label">Additional Notes</label>
-                            <textarea class="form-control" id="notes" name="notes" rows="3" placeholder="Any additional information about the patient's condition"></textarea>
+                            <textarea class="form-control" id="notes" name="notes" rows="3" 
+                                     placeholder="Any additional information about the patient's condition">{% if latest_vitals.notes %}{{ latest_vitals.notes }}{% endif %}</textarea>
                         </div>
-
+                    
+                        <div class="form-check mb-3">
+                            <input class="form-check-input" type="checkbox" id="update_patient_data" name="update_patient_data">
+                            <label class="form-check-label" for="update_patient_data">
+                                Update patient profile with this information
+                            </label>
+                            <small class="form-text text-muted d-block">Check this to update the patient's permanent record with height, weight, and allergies.</small>
+                        </div>
+                    
                         <div class="d-flex justify-content-between">
                             <button type="button" class="btn btn-danger" onclick="clearForm()">
                                 <i class="fas fa-eraser"></i> Clear Form
@@ -90,9 +136,52 @@
                     </form>
                 </div>
             </div>
+            
+            <!-- Vitals History Table -->
+            <div class="card shadow">
+                <div class="card-header py-3 bg-info">
+                    <h6 class="m-0 font-weight-bold text-white">Vitals History</h6>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-hover" id="vitalsHistoryTable">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Date/Time</th>
+                                    <th>BP (mmHg)</th>
+                                    <th>Pulse (BPM)</th>
+                                    <th>SpO2 (%)</th>
+                                    <th>Resp</th>
+                                    <th>Temp (°C)</th>
+                                    <th>BMI</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% if previous_vitals %}
+                                    {% for vital in previous_vitals %}
+                                    <tr>
+                                        <td>{{ vital.created_at|date:"M d, Y H:i" }}</td>
+                                        <td>{% if vital.systolic_bp and vital.diastolic_bp %}{{ vital.systolic_bp }}/{{ vital.diastolic_bp }}{% else %}-{% endif %}</td>
+                                        <td>{% if vital.pulse_rate %}{{ vital.pulse_rate }}{% else %}-{% endif %}</td>
+                                        <td>{% if vital.spo2 %}{{ vital.spo2 }}%{% else %}-{% endif %}</td>
+                                        <td>{% if vital.respiratory_rate %}{{ vital.respiratory_rate }}{% else %}-{% endif %}</td>
+                                        <td>{% if vital.temperature %}{{ vital.temperature }}{% else %}-{% endif %}</td>
+                                        <td>{% if vital.bmi %}{{ vital.bmi }}{% else %}-{% endif %}</td>
+                                    </tr>
+                                    {% endfor %}
+                                {% else %}
+                                    <tr>
+                                        <td colspan="7" class="text-center">No vitals history available</td>
+                                    </tr>
+                                {% endif %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
         </div>
 
-        <!-- Right Section for Patient Profile -->
+        <!-- Right Section for Patient Info -->
         <div class="col-lg-4 col-md-5 mb-4">
             <div class="card shadow mb-4">
                 <div class="card-header py-3 bg-gradient-primary text-white text-center">
@@ -102,13 +191,13 @@
                     <div class="patient-avatar mb-3">
                         <img src="/static/resource/abid.jpg" alt="Patient Photo" class="img-profile rounded-circle shadow" style="width: 150px; height: 150px; object-fit: cover; border: 4px solid #4e73df;">
                     </div>
-                    <h5 class="patient-name">{{ patient.user.name|default:"John Doe" }}</h5>
-                    <p class="patient-id mb-3">ID: {{ patient.user.custom_id|default:"PAT001" }}</p>
+                    <h5 class="patient-name">{{ patient.user.name|default:"Mr. Unknown" }}</h5>
+                    <p class="patient-id mb-3">ID: {{ patient.user.custom_id|default:"N/A" }}</p>
                     
                     <div class="patient-details text-left">
                         <div class="row mb-2">
                             <div class="col-5 font-weight-bold text-primary">Age:</div>
-                            <div class="col-7">{{ patient.age|default:"45" }} years</div>
+                            <div class="col-7">{{ patient.age|default:"N/A" }} years</div>
                         </div>
                         <div class="row mb-2">
                             <div class="col-5 font-weight-bold text-primary">Gender:</div>
@@ -122,51 +211,82 @@
                         </div>
                         <div class="row mb-2">
                             <div class="col-5 font-weight-bold text-primary">Contact:</div>
-                            <div class="col-7">{{ patient.user.phone|default:"+1-555-123-4567" }}</div>
+                            <div class="col-7">{{ patient.user.phone|default:"N/A" }}</div>
                         </div>
                         <div class="row mb-2">
                             <div class="col-5 font-weight-bold text-primary">Address</div>
-                            <div class="col-7">{{ patient.address|default:"123 Main St, New York, NY" }}</div>
+                            <div class="col-7">{{ patient.address|default:"N/A" }}</div>
                         </div>
-
+                        {% if latest_vitals.allergies %}
+                        <div class="row mb-2">
+                            <div class="col-5 font-weight-bold text-primary">Allergies:</div>
+                            <div class="col-7 text-danger">{{ latest_vitals.allergies }}</div>
+                        </div>
+                        {% endif %}
                     </div>
-
+        
                     <hr>
+                    {% if latest_vitals.allergies != 'None' %}
+                    <div class="alert alert-danger mb-3 py-2">
+                        <i class="fas fa-exclamation-triangle"></i> Allergies: {{ latest_vitals.allergies }}
+                    </div>
+                    {% endif %}
                     
-                    <hr>
                     <div class="d-flex justify-content-between">
-                        <button class="btn btn-sm btn-primary">
+                        <a href="#" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#medicalHistoryModal">
                             <i class="fas fa-file-medical"></i> Medical History
-                        </button>
-                        <button class="btn btn-sm btn-info">
+                        </a>
+                        <a href="#" class="btn btn-sm btn-info" data-bs-toggle="modal" data-bs-target="#notesModal">
                             <i class="fas fa-notes-medical"></i> View Notes
-                        </button>
+                        </a>
                     </div>
                 </div>
             </div>
-
+        
             <!-- Latest Appointment Card -->
-            <div class="card shadow">
+            <div class="card shadow mb-4">
                 <div class="card-header py-3 bg-gradient-success text-white">
-                    <h6 class="m-0 font-weight-bold">Latest Appointment</h6>
+                    <h6 class="m-0 font-weight-bold">Current Appointment</h6>
                 </div>
                 <div class="card-body">
                     <div class="row mb-2">
+                        <div class="col-5 font-weight-bold text-primary">Appt ID:</div>
+                        <div class="col-7">{{ appointment.appointment_id }}</div>
+                    </div>
+                    <div class="row mb-2">
                         <div class="col-5 font-weight-bold text-primary">Date:</div>
-                        <div class="col-7">{% now "Y-m-d" %}</div>
+                        <div class="col-7">{{ appointment.appointment_date|date:"M d, Y H:i" }}</div>
                     </div>
                     <div class="row mb-2">
                         <div class="col-5 font-weight-bold text-primary">Doctor:</div>
-                        <div class="col-7">Dr. {{ doctor.user.name|default:"Ashish Kumar" }}</div>
+                        <div class="col-7">Dr. {{ doctor.user.name|default:"Unknown" }}</div>
                     </div>
                     <div class="row mb-2">
                         <div class="col-5 font-weight-bold text-primary">Status:</div>
-                        <div class="col-7"><span class="badge bg-success text-white">{{ appointment.status|default:"Scheduled" }}</span></div>
+                        <div class="col-7">
+                            {% if appointment.status == "pending" %}
+                                <span class="badge bg-warning text-dark">Pending</span>
+                            {% elif appointment.status == "completed" %}
+                                <span class="badge bg-success text-white">Completed</span>
+                            {% elif appointment.status == "cancelled" %}
+                                <span class="badge bg-danger text-white">Cancelled</span>
+                            {% elif appointment.status == "scheduled" %}
+                                <span class="badge bg-info text-white">Scheduled</span>
+                            {% else %}
+                                <span class="badge bg-secondary text-white">{{ appointment.status|capfirst }}</span>
+                            {% endif %}
+                        </div>
                     </div>
+                    {% if appointment.chief_complain %}
+                    <div class="row mb-2">
+                        <div class="col-5 font-weight-bold text-primary">Chief Complaint:</div>
+                        <div class="col-7">{{ appointment.chief_complain }}</div>
+                    </div>
+                    {% endif %}
                     <div class="text-center mt-3">
-                        <button class="btn btn-sm btn-outline-primary">
+                        <a href="#" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#appointmentDetailsModal">
                             <i class="fas fa-calendar-check"></i> Appointment Details
-                        </button>
+                        </a>
                     </div>
                 </div>
             </div>
@@ -174,9 +294,6 @@
     </div>
 </div>
 
-<!-- Bootstrap 5 CSS if not already included in base template -->
-<!-- <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" /> -->
-<!-- <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script> -->
 <style>
     /* Custom styles to enhance the form appearance */
     .main-container {
@@ -255,6 +372,27 @@
         background-color: rgba(78, 115, 223, 0.05);
     }
 
+    /* For the BMI field highlight */
+    #bmi.normal {
+        background-color: #e8f5e9;
+        color: #2e7d32;
+    }
+    
+    #bmi.overweight {
+        background-color: #fff8e1;
+        color: #ff8f00;
+    }
+    
+    #bmi.obese {
+        background-color: #ffebee;
+        color: #c62828;
+    }
+    
+    #bmi.underweight {
+        background-color: #e3f2fd;
+        color: #1565c0;
+    }
+
     /* Custom animations */
     .fade-in {
         animation: fadeIn 0.5s;
@@ -265,6 +403,7 @@
         to { opacity: 1; }
     }
 </style>
+
 <script>
     $(document).ready(function() {
         $('#allergies').select2({
@@ -274,11 +413,55 @@
         });
     });
 
+    function calculateBMI() {
+        const weight = parseFloat(document.getElementById('weight').value);
+        const height = parseFloat(document.getElementById('height').value);
+        const bmiField = document.getElementById('bmi');
+        
+        if (weight && height && height > 0) {
+            // Convert height from cm to meters
+            const heightInMeters = height / 100;
+            // Calculate BMI
+            const bmi = (weight / (heightInMeters * heightInMeters)).toFixed(1);
+            
+            if (bmiField) {
+                bmiField.value = bmi;
+                
+                // Add BMI classification if desired
+                if (bmi < 18.5) {
+                    bmiField.style.backgroundColor = "#e3f2fd";
+                    bmiField.style.color = "#1565c0";
+                } else if (bmi >= 18.5 && bmi < 25) {
+                    bmiField.style.backgroundColor = "#e8f5e9";
+                    bmiField.style.color = "#2e7d32";
+                } else if (bmi >= 25 && bmi < 30) {
+                    bmiField.style.backgroundColor = "#fff8e1";
+                    bmiField.style.color = "#ff8f00";
+                } else {
+                    bmiField.style.backgroundColor = "#ffebee";
+                    bmiField.style.color = "#c62828";
+                }
+            }
+        } else if (bmiField) {
+            bmiField.value = "";
+            bmiField.style = "";
+        }
+    }
+
     function clearForm() {
         document.getElementById("vitalsForm").reset();
-        document.getElementById("bmi").className = "";
-        document.getElementById("bmi").value = "";
-        $('#allergies').val(null).trigger('change');
+        
+        // Reset BMI field if it exists
+        const bmiField = document.getElementById('bmi');
+        if (bmiField) {
+            bmiField.value = "";
+            bmiField.style = "";
+        }
+        
+        // Reset Select2 if it's initialized
+        if ($.fn.select2) {
+            $('#allergies').val(null).trigger('change');
+        }
     }
 </script>
-{% endblock %}
+{% endblock %}      
