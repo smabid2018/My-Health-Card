@@ -1,8 +1,9 @@
+import datetime
 from django.shortcuts import render, HttpResponse, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from .models import Patient, Doctor, AdminProxy, NurseProxy, LabTechProxy, RadiographerProxy, User, Appointment  # Add other models as needed
+from .models import Patient, Doctor, AdminProxy, NurseProxy, LabTechProxy, RadiographerProxy, User, Appointment, VitalsRecord  # Add other models as needed
 
 # views logic.
 
@@ -48,50 +49,52 @@ def doctor_dashboard(request):
     try:
         # Get the doctor object
         doctor = Doctor.objects.get(user=request.user)
-        
+        print(f'Doctor: {doctor}')
         # Count new appointments for this doctor
         new_appointments_count = Appointment.objects.filter(
             doctor=doctor, 
             status='pending'
         ).count()
-        
+        print(f'New appointments count: {new_appointments_count}')
         # Get total appointments for this doctor
         total_appointments_count = Appointment.objects.filter(doctor=doctor).count()
-        
+        print(f'Total appointments count: {total_appointments_count}')
         # Get recovered patients count (assuming you mark appointments as 'completed' when recovered)
         recovered_patients_count = Appointment.objects.filter(
             doctor=doctor, 
             status='completed'
         ).count()
-        
+        print(f'Recovered patients count: {recovered_patients_count}')
         # Get referred patients count (assuming you have a 'referred' status in appointments)
         referred_patients_count = Appointment.objects.filter(
             doctor=doctor, 
             status='referred'
         ).count()
-        
+        print(f'Referred patients count: {referred_patients_count}')
         # Get new appointments for this doctor
         new_appointments = Appointment.objects.filter(
             doctor=doctor,
             status='pending'
         ).select_related('patient', 'patient__user').order_by('-appointment_date')[:10]
-        
+        print(f'New appointments: {new_appointments}')
         # Get recent patients for this doctor - simplified approach
         recent_appointments = Appointment.objects.filter(
             doctor=doctor
         ).order_by('-appointment_date')[:10]
-            
+        print(f'Recent appointments: {recent_appointments}')
         # Get unique patients using a simpler approach
         seen_patients = set()
         recent_patients = []
         
         for appt in recent_appointments:
+            print(f'appt.patient_id: {appt.patient_id}')
             if appt.patient_id not in seen_patients and len(recent_patients) < 3:
+                print(f'Adding patient: {appt.patient_id}')
                 seen_patients.add(appt.patient_id)
+                print(f'appt.patient: {appt.patient}')
                 patient = appt.patient
-                # Set a temporary attribute for display purposes
-                patient.diagnosis = appt.chief_complain if appt.chief_complain else "Not specified"
                 recent_patients.append(patient)
+        print(f'Recent patients: {recent_patients}')
         
         context = {
             'user': request.user,
@@ -204,21 +207,153 @@ def nursedash(request):
 
 @login_required
 def vitalsentry(request):
-    # Retrieve the appointment_id from the GET parameters
-    appointment_id = request.GET.get('appointment_id')
-    if appointment_id:
-        # Retrieve the appointment object (or return 404 if not found)
-        appointment = get_object_or_404(Appointment, appointment_id=appointment_id)
-        context = {
-            'appointment': appointment,
-            'patient': appointment.patient,
-            'doctor': appointment.doctor,
-        }
-    else:
-        context = {}
+    # Retrieve the appointment_id from the GET parameters or form data
+    appointment_id = request.GET.get('appointment_id') or request.POST.get('appointment_id')
+    print(f'Appointment ID: {appointment_id}')
+    if not appointment_id:
+        messages.error(request, "No appointment specified. Please select an appointment.")
+        return redirect('nursedash')  # Redirect to nurse dashboard if no appointment_id
+    
+    # Retrieve the appointment object (or return 404 if not found)
+    appointment = get_object_or_404(Appointment, appointment_id=appointment_id)
+    print(f'Appointment: {appointment}')
+    
+    # Handle form submission
+    if request.method == 'POST':
+        print('Vitals form submitted')
+        try:
+            # Properly convert form values to appropriate types
+            systolic_bp = request.POST.get('bp-systolic')
+            diastolic_bp = request.POST.get('bp-diastolic')
+            pulse_rate = request.POST.get('pulse')
+            spo2 = request.POST.get('spo2')
+            respiratory_rate = request.POST.get('respiratory')
+            temperature = request.POST.get('temperature')
+            weight = request.POST.get('weight')
+            height = request.POST.get('height')
+            notes = request.POST.get('notes')
+            
+            # Convert values to appropriate types, handling empty strings
+            systolic_bp = int(systolic_bp) if systolic_bp else None
+            diastolic_bp = int(diastolic_bp) if diastolic_bp else None
+            pulse_rate = int(pulse_rate) if pulse_rate else None
+            spo2 = int(spo2) if spo2 else None
+            respiratory_rate = int(respiratory_rate) if respiratory_rate else None
+            temperature = float(temperature) if temperature else None
+            weight = float(weight) if weight else None
+            height = int(height) if height else None
+            
+            # Handle allergies (multiple select)
+            allergies = request.POST.getlist('allergies[]')
+            allergies_str = ", ".join(allergies) if allergies else None
+            
+            # Create a new vitals record
+            vitals = VitalsRecord(
+                appointment=appointment,
+                systolic_bp=systolic_bp,
+                diastolic_bp=diastolic_bp,
+                pulse_rate=pulse_rate,
+                spo2=spo2,
+                respiratory_rate=respiratory_rate,
+                temperature=temperature,
+                weight=weight,
+                height=height,
+                notes=notes,
+                allergies=allergies_str,
+                entered_by=request.user
+            )
+            
+            # Calculate and set BMI if height and weight are provided
+            if height and weight and height > 0:
+                height_in_meters = height / 100
+                bmi = round(weight / (height_in_meters ** 2), 1)
+                vitals.bmi = bmi
+            
+            print('Saving vitals record to database...')
+            vitals.save()
+            print(f'Vitals record saved with ID: {vitals.id}')
+            
+            # Also update patient record if height/weight/allergies data is present
+            patient = appointment.patient
+            update_patient = request.POST.get('update_patient_data') == 'on'
+            
+            if update_patient:
+                if height:
+                    patient.height = height
+                
+                if weight:
+                    patient.weight = weight
+                
+                if allergies_str:
+                    patient.allergies = allergies_str
+                    
+                patient.save()
+                print(f'Patient record updated')
+            
+            messages.success(request, "Vitals recorded successfully!")
+            
+            # Redirect to the same page to prevent form resubmission
+            return redirect(f'/vitalsentry/?appointment_id={appointment_id}')
+            
+        except Exception as e:
+            print(f"Error saving vitals: {str(e)}")
+            messages.error(request, f"Error saving vitals: {str(e)}")
+    
+    # Get previous vitals for this patient
+    try:
+        previous_vitals = VitalsRecord.objects.filter(
+            appointment__patient=appointment.patient
+        ).order_by('-created_at')[:10]  # Get the 10 most recent records
+        
+        # Get the latest vitals record for this patient
+        latest_vitals = previous_vitals.first() if previous_vitals.exists() else None
+        
+        # If there's no previous record but there's patient data, pre-fill with patient data
+        if not latest_vitals and appointment.patient:
+            patient = appointment.patient
+            latest_vitals = VitalsRecord(
+                appointment=appointment,
+                height=patient.height if hasattr(patient, 'height') else None,
+                weight=patient.weight if hasattr(patient, 'weight') else None,
+                allergies=patient.allergies if hasattr(patient, 'allergies') else None
+            )
+            
+            # Calculate BMI if height and weight are available
+            if latest_vitals.height and latest_vitals.weight and latest_vitals.height > 0:
+                height_in_meters = latest_vitals.height / 100
+                latest_vitals.bmi = round(latest_vitals.weight / (height_in_meters ** 2), 1)
+                
+    except Exception as e:
+        print(f"Error fetching previous vitals: {str(e)}")
+        previous_vitals = []
+        latest_vitals = None
+    
+    # Get all appointment history for this patient
+    patient_appointments = Appointment.objects.filter(
+        patient=appointment.patient
+    ).exclude(
+        appointment_id=appointment_id  # Exclude the current appointment
+    ).order_by('-appointment_date')[:5]  # Get the 5 most recent appointments
+    
+    # Format allergies as a list if present
+    if latest_vitals and latest_vitals.allergies:
+        allergies_list = [allergy.strip() for allergy in latest_vitals.allergies.split(',')]
+        latest_vitals.allergies_list = allergies_list
+    
+    # Prepare context for the template
+    context = {
+        'appointment': appointment,
+        'patient': appointment.patient,
+        'doctor': appointment.doctor,
+        'previous_vitals': previous_vitals,
+        'latest_vitals': latest_vitals,
+        'appointment_id': appointment_id,
+        'patient_appointments': patient_appointments,
+        'current_datetime': datetime.datetime.now(),
+        'current_user': request.user,
+    }
     
     return render(request, "vitalsentry.html", context)
-
 
 @login_required
 def techdash(request):
