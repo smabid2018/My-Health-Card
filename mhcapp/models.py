@@ -88,6 +88,12 @@ class Patient(models.Model):
     gender = models.CharField(max_length=1, choices=GENDER_CHOICES)
     address = models.TextField()
 
+    # # Additional fields for patient details
+    # height = models.IntegerField(null=True, blank=True)  # Height in cm
+    # weight = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)  # Weight in kg
+    # allergies = models.TextField(blank=True, null=True)
+    # blood_type = models.CharField(max_length=5, blank=True, null=True)
+
 class Doctor(models.Model):
     user = models.OneToOneField(
         'User',  # Use string reference
@@ -181,3 +187,46 @@ class Appointment(models.Model):
     def __str__(self):
         return f"Appointment {self.appointment_id} - {self.patient.user.name} with {self.doctor.user.name}"
 
+# Vitals models
+class VitalsRecord(models.Model):
+    appointment = models.ForeignKey(Appointment, on_delete=models.CASCADE, related_name='vitals_records')
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    # Vitals measurements
+    systolic_bp = models.IntegerField(null=True, blank=True)
+    diastolic_bp = models.IntegerField(null=True, blank=True)
+    pulse_rate = models.IntegerField(null=True, blank=True)
+    spo2 = models.IntegerField(null=True, blank=True)
+    respiratory_rate = models.IntegerField(null=True, blank=True)
+    temperature = models.DecimalField(max_digits=4, decimal_places=1, null=True, blank=True)
+    weight = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
+    height = models.IntegerField(null=True, blank=True)
+    
+    # BMI can be calculated on the fly, but we'll store it for historical records
+    bmi = models.DecimalField(max_digits=4, decimal_places=1, null=True, blank=True)
+    
+    # Other information
+    allergies = models.TextField(blank=True, null=True)
+    notes = models.TextField(blank=True, null=True)
+    
+    # Record who entered this data
+    entered_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='entered_vitals')
+    
+    class Meta:
+        ordering = ['-created_at']
+    
+    def __str__(self):
+        return f"Vitals for {self.appointment.patient.user.name} - {self.created_at.strftime('%Y-%m-%d %H:%M')}"
+    
+    def calculate_bmi(self):
+        if self.weight and self.height and self.height > 0:
+            # Height is in cm, weight in kg
+            height_in_meters = self.height / 100
+            return round(self.weight / (height_in_meters ** 2), 1)
+        return None
+    
+    def save(self, *args, **kwargs):
+        # Calculate BMI before saving if possible
+        if not self.bmi:
+            self.bmi = self.calculate_bmi()
+        super().save(*args, **kwargs)
