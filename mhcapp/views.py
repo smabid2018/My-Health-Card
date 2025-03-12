@@ -3,6 +3,7 @@ from django.shortcuts import render, HttpResponse, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.urls import reverse
 from .models import Patient, Doctor, AdminProxy, NurseProxy, LabTechProxy, RadiographerProxy, User, Appointment, VitalsRecord  # Add other models as needed
 
 # views logic.
@@ -10,10 +11,51 @@ from .models import Patient, Doctor, AdminProxy, NurseProxy, LabTechProxy, Radio
 def home(request):
     return render(request, "drdash.html")
 
+# Update both views to handle the appointment_id parameter
 def drloa(request):
-    return render(request, "drLOA.html")
+    appointment_id = request.GET.get('appointment_id')
+    
+    try:
+        if appointment_id:
+            # Get the appointment object
+            appointment = Appointment.objects.get(appointment_id=appointment_id)
+            latest_vitals = VitalsRecord.objects.filter(appointment=appointment).order_by('-created_at').first()
+            print(f'Appointment: {appointment}')
+            print(f'Latest vitals: {latest_vitals}')
+            
+            context = {
+                'appointment': appointment,
+                'patient': appointment.patient,
+                'doctor': appointment.doctor,
+                'current_datetime': datetime.datetime.now(),
+                'latest_vitals': latest_vitals,
+            }
+        else:
+            context = {
+                'error_message': 'No appointment ID provided',
+                'current_datetime': datetime.datetime.now(),
+            }
+        
+        return render(request, "drLOA.html", context)
+    except Exception as e:
+        context = {
+            'error_message': str(e),
+            'current_datetime': datetime.datetime.now(),
+        }
+        return render(request, "drLOA.html", context)
+
 
 def loa(request):
+    if request.method == 'POST':
+        appointment_id = request.POST.get('appointment_id')
+
+        # Process submitted medications
+        medications = request.POST.getlist('medication[]')
+        print(f'LOA form submitted: appointment_id: {appointment_id}, loa_notes: {medications}')
+        
+        
+        messages.success(request, 'LOA saved successfully!')
+        return redirect('doctor_dashboard')
     return render(request, "loa.html")
 
 # def admindash(request):
@@ -50,61 +92,63 @@ def doctor_dashboard(request):
         # Get the doctor object
         doctor = Doctor.objects.get(user=request.user)
         print(f'Doctor: {doctor}')
-        # Count new appointments for this doctor
+        
+        # Count new/pending appointments for this doctor
         new_appointments_count = Appointment.objects.filter(
             doctor=doctor, 
             status='pending'
         ).count()
         print(f'New appointments count: {new_appointments_count}')
+        
         # Get total appointments for this doctor
         total_appointments_count = Appointment.objects.filter(doctor=doctor).count()
         print(f'Total appointments count: {total_appointments_count}')
+        
         # Get recovered patients count (assuming you mark appointments as 'completed' when recovered)
         recovered_patients_count = Appointment.objects.filter(
             doctor=doctor, 
             status='completed'
         ).count()
         print(f'Recovered patients count: {recovered_patients_count}')
+        
         # Get referred patients count (assuming you have a 'referred' status in appointments)
         referred_patients_count = Appointment.objects.filter(
             doctor=doctor, 
             status='referred'
         ).count()
         print(f'Referred patients count: {referred_patients_count}')
-        # Get new appointments for this doctor
-        new_appointments = Appointment.objects.filter(
+        
+        # Get pending appointments for this doctor - renamed from new_appointments to match template
+        pending_appointments = Appointment.objects.filter(
             doctor=doctor,
             status='pending'
         ).select_related('patient', 'patient__user').order_by('-appointment_date')[:10]
-        print(f'New appointments: {new_appointments}')
-        # Get recent patients for this doctor - simplified approach
-        recent_appointments = Appointment.objects.filter(
-            doctor=doctor
-        ).order_by('-appointment_date')[:10]
-        print(f'Recent appointments: {recent_appointments}')
-        # Get unique patients using a simpler approach
-        seen_patients = set()
-        recent_patients = []
+        print(f'Pending appointments: {pending_appointments}')
         
-        for appt in recent_appointments:
-            print(f'appt.patient_id: {appt.patient_id}')
-            if appt.patient_id not in seen_patients and len(recent_patients) < 3:
-                print(f'Adding patient: {appt.patient_id}')
-                seen_patients.add(appt.patient_id)
-                print(f'appt.patient: {appt.patient}')
-                patient = appt.patient
-                recent_patients.append(patient)
-        print(f'Recent patients: {recent_patients}')
+        # Current date and time information
+        current_datetime = datetime.datetime.now()
+        formatted_datetime = current_datetime.strftime("%Y-%m-%d %H:%M:%S")
         
         context = {
+            # User and doctor info
             'user': request.user,
             'doctor': doctor,
+            
+            # Counts for dashboard cards
             'new_appointments_count': new_appointments_count,
             'total_appointments_count': total_appointments_count,
             'recovered_patients_count': recovered_patients_count,
             'referred_patients_count': referred_patients_count,
-            'new_appointments': new_appointments,
-            'recent_patients': recent_patients,
+            
+            # Appointments for table
+            'pending_appointments': pending_appointments,
+            
+            # DateTime information
+            'today': current_datetime,
+            'current_hour': current_datetime.hour,
+            
+            # URL for the "View Patient" button
+            'drloa_url': reverse('drloa'),
         }
         return render(request, 'drdash.html', context)
     except Doctor.DoesNotExist:
