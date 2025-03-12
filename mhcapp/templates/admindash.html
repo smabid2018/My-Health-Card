@@ -5,45 +5,49 @@
 
     <!-- Page Heading -->
     <div class="d-sm-flex align-items-lg-start mb-4 justify-content-between">
-        <h1 class="h3 mb-0 text-gray-800">Good Morning, <strong>{{admin.name}}</strong></h1>
-
+        <h1 class="h3 mb-0 text-gray-800">Good Morning, <strong>{{ admin.name }}</strong></h1>
     </div>
 
-    <!-- Content Row -->
+    <!-- Appointments Table -->
     <div class="row">
-        <!-- Recent Patients -->
-        <div class="col-xl-4 col-lg-5">
+        <div class="col-xl-12 col-lg-12">
             <div class="card shadow mb-4">
                 <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                    <h6 class="m-0 font-weight-bold text-primary">Recent Patients</h6>
+                    <h6 class="m-0 font-weight-bold text-primary">Appointments</h6>
                 </div>
                 <div class="card-body">
-                    <table class="table table-borderless">
-                        <thead>
-                            <tr>
-                                <th scope="col">PID</th>
-                                <th scope="col">Name</th>
-                                <th scope="col">Date</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <th scope="row">1</th>
-                                <td>Mark</td>
-                                <td>Jan 28</td>
-                            </tr>
-                            <tr>
-                                <th scope="row">2</th>
-                                <td>Thornton</td>
-                                <td>Jan 27</td>
-                            </tr>
-                            <tr>
-                                <th scope="row">3</th>
-                                <td>Larry</td>
-                                <td>Jan 26</td>
-                            </tr>
-                        </tbody>
-                    </table>
+                    <div class="table-responsive">
+                        <table class="table table-bordered" id="appointmentsTable" width="100%" cellspacing="0">
+                            <thead>
+                                <tr>
+                                    <th>Appointment ID</th>
+                                    <th>Patient Custom ID</th>
+                                    <th>Patient Name</th>
+                                    <th>Doctor Name</th>
+                                    <th>Speciality</th>
+                                    <th>Appointment Date</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for appointment in appointments %}
+                                <tr>
+                                    <td>{{ appointment.appointment_id }}</td>
+                                    <td>{{ appointment.patient.user.custom_id }}</td>
+                                    <td>{{ appointment.patient.user.name }}</td>
+                                    <td>{{ appointment.doctor.user.name }}</td>
+                                    <td>{{ appointment.doctor.speciality }}</td>
+                                    <td>{{ appointment.appointment_date|date:"M d, Y H:i" }}</td>
+                                    <td>{{ appointment.status }}</td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="8" class="text-center">No appointments found.</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>

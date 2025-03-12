@@ -3,7 +3,7 @@
                     <!-- All content -->
                     <div class="row">
                     <!-- Appointment content -->
-                    <div class="col-10 bg-gradient-light">
+                    <div class="col-9 bg-gradient-light">
                         <!-- First row content -->
                         <div class="row justify-content-around">
                             <!-- Vitals -->
@@ -18,7 +18,7 @@
                                       <h3 class="card-title">BP</h3>
                                     </div>
                                     <div class="card-content">
-                                      <div class="measurement">120/80</div>
+                                      <div class="measurement">{{latest_vitals.systolic_bp}}/{{latest_vitals.diastolic_bp}}</div>
                                       <div class="unit">mmHg</div>
                                     </div>
                                   </div>
@@ -31,7 +31,7 @@
                                       <h3 class="card-title">SpO2</h3>
                                     </div>
                                     <div class="card-content">
-                                      <div class="measurement">98%</div>
+                                      <div class="measurement">{{latest_vitals.spo2}}%</div>
                                       <div class="unit">O2 Sat</div>
                                     </div>
                                   </div>
@@ -44,7 +44,7 @@
                                       <h3 class="card-title">HR</h3>
                                     </div>
                                     <div class="card-content">
-                                      <div class="measurement">75</div>
+                                      <div class="measurement">{{latest_vitals.pulse_rate}}</div>
                                       <div class="unit">BPM</div>
                                     </div>
                                   </div>
@@ -57,7 +57,7 @@
                                       <h3 class="card-title">RR</h3>
                                     </div>
                                     <div class="card-content">
-                                      <div class="measurement">16</div>
+                                      <div class="measurement">{{latest_vitals.respiratory_rate}}</div>
                                       <div class="unit">br/min</div>
                                     </div>
                                   </div>
@@ -65,11 +65,27 @@
                             <!-- Ongoing Medication -->
                             <div class="col-5 medication">
                               <h3 class="section-title" style="border-bottom: 1px solid #4f1915;">Ongoing Medications</h3>
-                              <ul class="medication-list">
-                                <li>Tab. Paracetamol PO TDS for 3 days</li>
-                                <li>Cap. Amoxicillin PO BD for 5 days</li>
-                                <li>Syr. Cough Expectorant 10ml TDS</li>
-                              </ul>
+                              <form id="medicationForm" method="post" action="{% url 'loa' %}">
+                                {% csrf_token %}
+                                <input type="hidden" name="appointment_id" value="{{ appointment.appointment_id }}">
+                                <div class="mb-3">
+                                  <div class="input-group mb-2">
+                                    <input type="text" class="form-control" name="medication[]" placeholder="Add medication" value="">
+                                    <div class="input-group-append">
+                                      <button class="btn btn-outline-primary" type="button" onclick="removeItem(this)">
+                                        <i class="fas fa-times"></i>
+                                      </button>
+                                    </div>
+                                  </div>
+                                </div>
+                                <div class="d-flex justify-content-between align-items-center">
+                                  <button type="button" class="btn btn-sm btn-primary" onclick="addMedication()">
+                                    <i class="fas fa-plus"></i> Add Medication
+                                  </button>
+                                  <small class="text-muted">Last updated: 2025-03-12 14:04:44</small>
+                                </div>
+                                <button type="submit" class="d-none">Save Medications</button>
+                              </form>
                             </div>
                             <!-- Previous Diagnosis -->
                             <div class="col-4 diagnosis">
@@ -117,7 +133,7 @@
                         <br>
                         <!-- Third row content -->
                         <div class="row ml-0 justify-content-around" style="min-height: 21vh;">
-                            <!-- Diagonosis -->
+                            <!-- Diagnosis -->
                             <div class="col-2 diagnosis">
                                 <h3 class="section-title" style="border-bottom: 1px solid #4f1915;">Diagnosis</h3>
                                 <ul class="diagnosis-list">
@@ -138,32 +154,94 @@
                         </div>
                     </div>
                     <!-- Profile Card -->
-                    <div class="col-2 justify-content-center" style="padding: 0">
+                    <div class="col-3 justify-content-center" style="padding: 0">
                     <!-- Profile Card -->
-                        <div class="profile-card">
-                            <div class="card-header bg-dark text-white">
-                              <h6>Patient Profile</h6>
-                            </div>
-                          <div class="profile-header" style="display:flex; flex-direction:column;justify-content: center">
-                            <img src="/static/resource/abid.jpg" alt="Profile Picture" class="profile-pic">
-                            <div>
-                              <h6 class="mb-0">John Doe</h6>
-                              <p class="mb-0">Patient ID: 12345</p>
-                            </div>
-                          </div><br>
-                          <h6 class="text-muted" style="border-bottom: 1px solid #4f1915;">Details</h6>
-                          <ul class="list-unstyled">
-                            <li>Age: 45</li>
-                            <li>Gender: Male</li>
-                            <li>Height: 5'8"</li>
-                            <li>Weight: 70kg</li>
-                          </ul> <br><br><br>
-                          <h6 class="text-muted mt-3" style="border-bottom: 1px solid #4f1915;">Allergies</h6>
-                          <ul class="list-unstyled">
-                            <li>Penicillin</li>
-                            <li>Peanuts</li>
-                          </ul>
-                        </div>
+                    <div class="card shadow mb-4">
+                      <div class="card-header py-3 bg-gradient-primary text-white text-center">
+                          <h6 class="m-0 font-weight-bold">Patient Profile</h6>
+                      </div>
+                      <div class="card-body text-center">
+                          <div class="patient-avatar mb-3">
+                              <img src="/static/resource/abid.jpg" alt="Patient Photo" class="img-profile rounded-circle shadow" style="width: 150px; height: 150px; object-fit: cover; border: 4px solid #4e73df;">
+                          </div>
+                          <h5 class="patient-name">{{ patient.user.name|default:"Mr. Unknown" }}</h5>
+                          <p class="patient-id mb-3">ID: {{ patient.user.custom_id|default:"N/A" }}</p>
+                          
+                          <div class="patient-details text-left">
+                              <div class="row mb-2">
+                                  <div class="col-5 font-weight-bold text-primary">Age:</div>
+                                  <div class="col-7">{{ patient.age|default:"N/A" }} years</div>
+                              </div>
+                              <div class="row mb-2">
+                                  <div class="col-5 font-weight-bold text-primary">Gender:</div>
+                                  <div class="col-7">
+                                      {% if patient.gender == 'M' %}Male{% elif patient.gender == 'F' %}Female{% else %}Male{% endif %}
+                                  </div>
+                              </div>
+                              <div class="row mb-2">
+                                  <div class="col-5 font-weight-bold text-primary">Blood Type:</div>
+                                  <div class="col-7">{{ patient.blood_type|default:"N/A" }}</div>
+                              </div>
+                              <div class="row mb-2">
+                                  <div class="col-5 font-weight-bold text-primary">Contact:</div>
+                                  <div class="col-7">{{ patient.user.phone|default:"N/A" }}</div>
+                              </div>
+                              <div class="row mb-2">
+                                  <div class="col-5 font-weight-bold text-primary">Address</div>
+                                  <div class="col-7">{{ patient.address|default:"N/A" }}</div>
+                              </div>
+                              {% if latest_vitals.allergies %}
+                              <div class="row mb-2">
+                                  <div class="col-5 font-weight-bold text-primary">Allergies:</div>
+                                  <div class="col-7 text-danger">{{ latest_vitals.allergies }}</div>
+                              </div>
+                              {% endif %}
+                          </div>
+              
+                          <hr>
+                          {% if latest_vitals.allergies != 'None' %}
+                          <div class="alert alert-danger mb-3 py-2">
+                              <i class="fas fa-exclamation-triangle"></i> Allergies: {{ latest_vitals.allergies }}
+                          </div>
+                          {% endif %}
+                          
+                          <div class="d-flex justify-content-between">
+                              <a href="#" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#medicalHistoryModal">
+                                  <i class="fas fa-file-medical"></i> Medical History
+                              </a>
+                              <a href="#" class="btn btn-sm btn-info" data-bs-toggle="modal" data-bs-target="#notesModal">
+                                  <i class="fas fa-notes-medical"></i> View Notes
+                              </a>
+                          </div>
+                      </div>
+                  </div>
                     </div>
                     </div>
-{%  endblock%}
+
+                    <script>
+                      // Function to add a new medication input field
+                      function addMedication() {
+                        const container = document.querySelector('#medicationForm .mb-3');
+                        const inputGroup = document.createElement('div');
+                        inputGroup.className = 'input-group mb-2';
+                        inputGroup.innerHTML = `
+                          <input type="text" class="form-control" name="medication[]" placeholder="Add medication">
+                          <div class="input-group-append">
+                            <button class="btn btn-outline-primary" type="button" onclick="removeItem(this)">
+                              <i class="fas fa-times"></i>
+                            </button>
+                          </div>
+                        `;
+                        container.appendChild(inputGroup);
+                        
+                        // Focus the new input
+                        inputGroup.querySelector('input').focus();
+                      }
+
+                      // Function to remove an item
+                      function removeItem(button) {
+                        const inputGroup = button.closest('.input-group');
+                        inputGroup.remove();
+                      }
+                    </script>
+                    {%  endblock%}
