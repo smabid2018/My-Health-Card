@@ -230,3 +230,23 @@ class VitalsRecord(models.Model):
         if not self.bmi:
             self.bmi = self.calculate_bmi()
         super().save(*args, **kwargs)
+
+
+#  Lab Test models
+class LabTest(models.Model):
+    name = models.CharField(max_length=200, unique=True)
+    
+    def __str__(self):
+        return self.name
+
+class Subtest(models.Model):
+    test = models.ForeignKey(LabTest, on_delete=models.CASCADE, related_name='subtests')
+    name = models.CharField(max_length=200)
+    male_normal_low = models.FloatField(null=True, blank=True)
+    male_normal_high = models.FloatField(null=True, blank=True)
+    female_normal_low = models.FloatField(null=True, blank=True)
+    female_normal_high = models.FloatField(null=True, blank=True)
+    unit = models.CharField(max_length=50)
+    
+    def __str__(self):
+        return f"{self.test.name} - {self.name}"
