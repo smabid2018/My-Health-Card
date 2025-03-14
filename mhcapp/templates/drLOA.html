@@ -65,24 +65,35 @@
                             <!-- Ongoing Medication -->
                             <div class="col-5 medication">
                               <h3 class="section-title" style="border-bottom: 1px solid #4f1915;">Ongoing Medications</h3>
-                              <form id="medicationForm" method="post" action="{% url 'loa' %}">
+                              <form id="medicationForm" method="post" action="{% url 'ongoingMedication' %}">
                                 {% csrf_token %}
                                 <input type="hidden" name="appointment_id" value="{{ appointment.appointment_id }}">
-                                <div class="mb-3">
-                                  <div class="input-group mb-2">
-                                    <input type="text" class="form-control" name="medication[]" placeholder="Add medication" value="">
-                                    <div class="input-group-append">
-                                      <button class="btn btn-outline-primary" type="button" onclick="removeItem(this)">
-                                        <i class="fas fa-times"></i>
-                                      </button>
+                                <div class="mb-3" id="medication-container">
+                                  {% for med in ongoingMedication %}
+                                    <div class="input-group mb-2">
+                                      <input type="text" class="form-control" name="medication[]" placeholder="Add medication" value="{{ med.description }}">
+                                      <div class="input-group-append">
+                                        <button class="btn btn-outline-primary" type="button" onclick="removeItem(this)">
+                                          <i class="fas fa-times"></i>
+                                        </button>
+                                      </div>
                                     </div>
-                                  </div>
+                                  {% empty %}
+                                    <div class="input-group mb-2">
+                                      <input type="text" class="form-control" name="medication[]" placeholder="Add medication" value="">
+                                      <div class="input-group-append">
+                                        <button class="btn btn-outline-primary" type="button" onclick="removeItem(this)">
+                                          <i class="fas fa-times"></i>
+                                        </button>
+                                      </div>
+                                    </div>
+                                  {% endfor %}
                                 </div>
                                 <div class="d-flex justify-content-between align-items-center">
                                   <button type="button" class="btn btn-sm btn-primary" onclick="addMedication()">
                                     <i class="fas fa-plus"></i> Add Medication
                                   </button>
-                                  <small class="text-muted">Last updated: 2025-03-12 14:04:44</small>
+                                  <small class="text-muted">{{ongoingMedicationUpdateTime}}</small>
                                 </div>
                                 <button type="submit" class="d-none">Save Medications</button>
                               </form>
@@ -221,7 +232,7 @@
                     <script>
                       // Function to add a new medication input field
                       function addMedication() {
-                        const container = document.querySelector('#medicationForm .mb-3');
+                        const container = document.getElementById('medication-container');
                         const inputGroup = document.createElement('div');
                         inputGroup.className = 'input-group mb-2';
                         inputGroup.innerHTML = `
@@ -237,11 +248,19 @@
                         // Focus the new input
                         inputGroup.querySelector('input').focus();
                       }
-
+                      
                       // Function to remove an item
                       function removeItem(button) {
                         const inputGroup = button.closest('.input-group');
-                        inputGroup.remove();
+                        
+                        // Only remove if it's not the last input group
+                        const container = document.getElementById('medication-container');
+                        if (container.querySelectorAll('.input-group').length > 1) {
+                          inputGroup.remove();
+                        } else {
+                          // If it's the last one, just clear the value
+                          inputGroup.querySelector('input').value = '';
+                        }
                       }
                     </script>
                     {%  endblock%}
