@@ -5,7 +5,7 @@ from django.contrib.auth import authenticate, login
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.urls import reverse
-from .models import Medication, Patient, Doctor, AdminProxy, NurseProxy, LabTechProxy, PreviousDiagnosis, RadiographerProxy, User, Appointment, VitalsRecord  # Add other models as needed
+from .models import ChiefComplain, CurrentDiagnosis, Medication, Patient, Doctor, AdminProxy, NurseProxy, LabTechProxy, PreviousDiagnosis, RadiographerProxy, TreatmentPlan, User, Appointment, VitalsRecord  # Add other models as needed
 
 # views logic.
 
@@ -431,9 +431,18 @@ def drloa(request):
             ongoingMedicationUpdateTime = ongoingMedication.latest('created_at').created_at if ongoingMedication.exists() else None
             previousDiagnosis = PreviousDiagnosis.objects.filter(appointment=appointment)
             previousDiagnosisUpdateTime = previousDiagnosis.latest('created_at').created_at if previousDiagnosis.exists() else None
+            chiefComplains = ChiefComplain.objects.filter(appointment=appointment)
+            chiefComplainUpdateTime = chiefComplains.latest('created_at').created_at if chiefComplains.exists() else None
+            currentDiagnosis = CurrentDiagnosis.objects.filter(appointment=appointment)
+            currentDiagnosisUpdateTime = currentDiagnosis.latest('created_at').created_at if currentDiagnosis.exists() else None
+            treatmentPlans = TreatmentPlan.objects.filter(appointment=appointment)
+            treatmentPlanUpdateTime = treatmentPlans.latest('created_at').created_at if treatmentPlans.exists() else None
             print(f'Appointment: {appointment}')
             print(f'ongoingMedication: {ongoingMedication}')
-            print(f'previousDiagnosis: {previousDiagnosis}')
+            print(f'previousDiagnosis of the patient before context: {previousDiagnosis}')
+            print(f'chiefComplains: {chiefComplains}')
+            print(f'currentDiagnosis: {currentDiagnosis}')
+            print(f'treatmentPlans: {treatmentPlans}')
             
             context = {
                 'appointment': appointment,
@@ -445,6 +454,12 @@ def drloa(request):
                 'ongoingMedicationUpdateTime': ongoingMedicationUpdateTime,
                 'previousDiagnosis': previousDiagnosis,
                 'previousDiagnosisUpdateTime': previousDiagnosisUpdateTime,
+                'chiefComplains': chiefComplains,
+                'chiefComplainUpdateTime': chiefComplainUpdateTime,
+                'currentDiagnosis': currentDiagnosis,
+                'currentDiagnosisUpdateTime': currentDiagnosisUpdateTime,
+                'treatmentPlans': treatmentPlans,
+                'treatmentPlanUpdateTime': treatmentPlanUpdateTime,
             }
         else:
             context = {
@@ -459,7 +474,6 @@ def drloa(request):
             'current_datetime': datetime.datetime.now(),
         }
         return render(request, "drLOA.html", context)
-
 
 def loa(request):
     if request.method == 'POST':
@@ -531,6 +545,7 @@ def previousDiagnosis(request):
 
     try:
         appointment_id = request.POST.get('appointment_id')
+        print(f'appointment_id from previous diagnosis: {appointment_id}')
         if not appointment_id:
             messages.error(request, "Appointment ID is required.")
             return redirect('doctor_dashboard')
@@ -543,8 +558,8 @@ def previousDiagnosis(request):
             return redirect('doctor_dashboard')
 
         # Process submitted diagnoses
-        diagnoses = request.POST.getlist('diagnosis[]')
-        
+        diagnoses = request.POST.getlist('previous_diagnosis[]')
+        print(f'diagnoses recieved from previous diagnosis: {diagnoses}')
         # Remove existing diagnoses for this appointment
         PreviousDiagnosis.objects.filter(appointment=appointment).delete()
         
@@ -565,5 +580,145 @@ def previousDiagnosis(request):
 
     except Exception as e:
         print(f"Error saving diagnoses: {str(e)}")
+        messages.error(request, f"Error: {str(e)}")
+        return redirect('doctor_dashboard')
+    
+
+@login_required
+def chiefComplain(request):
+    """Handle the submission of chief complain form data"""
+    if request.method != 'POST':
+        messages.error(request, "Invalid request method.")
+        return redirect('doctor_dashboard')
+
+    try:
+        appointment_id = request.POST.get('appointment_id')
+        if not appointment_id:
+            messages.error(request, "Appointment ID is required.")
+            return redirect('doctor_dashboard')
+        
+        appointment = get_object_or_404(Appointment, appointment_id=appointment_id)
+        
+        # Verify the logged-in user is the assigned doctor
+        if request.user != appointment.doctor.user:
+            messages.error(request, "You are not authorized to update this appointment.")
+            return redirect('doctor_dashboard')
+
+        # Process submitted chief complains
+        chief_complains = request.POST.getlist('chief_complain[]')
+        
+        # Remove existing chief complains for this appointment
+        ChiefComplain.objects.filter(appointment=appointment).delete()
+        
+        # Create new chief complain records
+        for complain in chief_complains:
+            if complain.strip():  # Only save non-empty entries
+                ChiefComplain.objects.create(
+                    appointment=appointment,
+                    description=complain.strip(),
+                    created_by=request.user
+                )
+        print(f'Chief complains saved for appointment ID: {appointment_id}')
+        messages.success(request, 'Chief complains have been updated successfully.')
+
+        # Generate the URL with the query parameter
+        redirect_url = reverse('drloa') + f'?appointment_id={appointment_id}'
+        return HttpResponseRedirect(redirect_url)
+
+    except Exception as e:
+        print(f"Error saving chief complains: {str(e)}")
+        messages.error(request, f"Error: {str(e)}")
+        return redirect('doctor_dashboard')
+    
+
+@login_required
+def currentDiagnosis(request):
+    """Handle the submission of current diagnosis form data"""
+    if request.method != 'POST':
+        messages.error(request, "Invalid request method.")
+        return redirect('doctor_dashboard')
+
+    try:
+        appointment_id = request.POST.get('appointment_id')
+        if not appointment_id:
+            messages.error(request, "Appointment ID is required.")
+            return redirect('doctor_dashboard')
+        
+        appointment = get_object_or_404(Appointment, appointment_id=appointment_id)
+        
+        # Verify the logged-in user is the assigned doctor
+        if request.user != appointment.doctor.user:
+            messages.error(request, "You are not authorized to update this appointment.")
+            return redirect('doctor_dashboard')
+
+        # Process submitted diagnoses
+        diagnoses = request.POST.getlist('diagnosis[]')
+        
+        # Remove existing diagnoses for this appointment
+        CurrentDiagnosis.objects.filter(appointment=appointment).delete()
+        
+        # Create new diagnosis records
+        for diag in diagnoses:
+            if diag.strip():  # Only save non-empty entries
+                CurrentDiagnosis.objects.create(
+                    appointment=appointment,
+                    description=diag.strip(),
+                    created_by=request.user
+                )
+        print(f'Diagnoses saved for appointment ID: {appointment_id}')
+        messages.success(request, 'Current diagnoses have been updated successfully.')
+
+        # Generate the URL with the query parameter
+        redirect_url = reverse('drloa') + f'?appointment_id={appointment_id}'
+        return HttpResponseRedirect(redirect_url)
+
+    except Exception as e:
+        print(f"Error saving diagnoses: {str(e)}")
+        messages.error(request, f"Error: {str(e)}")
+        return redirect('doctor_dashboard')
+    
+@login_required
+def treatmentPlan(request):
+    """Handle the submission of treatment plan form data"""
+    if request.method != 'POST':
+        messages.error(request, "Invalid request method.")
+        return redirect('doctor_dashboard')
+
+    try:
+        appointment_id = request.POST.get('appointment_id')
+        if not appointment_id:
+            messages.error(request, "Appointment ID is required.")
+            return redirect('doctor_dashboard')
+        
+        appointment = get_object_or_404(Appointment, appointment_id=appointment_id)
+        
+        # Verify the logged-in user is the assigned doctor
+        if request.user != appointment.doctor.user:
+            messages.error(request, "You are not authorized to update this appointment.")
+            return redirect('doctor_dashboard')
+
+        # Process submitted treatment plans
+        treatment_plans = request.POST.getlist('treatment_plan[]')
+        
+        # Remove existing treatment plans for this appointment
+        TreatmentPlan.objects.filter(appointment=appointment).delete()
+        
+        # Create new treatment plan records
+        for plan in treatment_plans:
+            if plan.strip():  # Only save non-empty entries
+                TreatmentPlan.objects.create(
+                    appointment=appointment,
+                    description=plan.strip(),
+                    created_by=request.user
+                )
+        print(f'Treatment plans saved for appointment ID: {appointment_id}')
+        messages.success(request, 'Treatment plans have been updated successfully.')
+
+        # Generate the URL with the query parameter
+        redirect_url = reverse('drloa') + f'?appointment_id={appointment_id}'
+        return HttpResponseRedirect(redirect_url)
+
+    except Exception as e:
+        print(f"Error saving treatment plans: {str(e)}")
         messages.error(request, f"Error: {str(e)}")
         return redirect('doctor_dashboard')
