@@ -101,12 +101,38 @@
                             <!-- Previous Diagnosis -->
                             <div class="col-4 diagnosis">
                               <h3 class="section-title" style="border-bottom: 1px solid #4f1915;">Previous Diagnoses</h3>
-
-                              <ul class="diagnosis-list">
-                                <li>Type II Diabetes with Ulcer</li>
-                                <li>Hypertension</li>
-                                <li>Asthma</li>
-                              </ul>
+                              <form id="diagnosisForm" method="post" action="{% url 'previousDiagnosis' %}">
+                                {% csrf_token %}
+                                <input type="hidden" name="appointment_id" value="{{ appointment.appointment_id }}">
+                                <div class="mb-3" id="diagnosis-container">
+                                  {% for diag in previousDiagnosis %}
+                                    <div class="input-group mb-2">
+                                      <input type="text" class="form-control" name="diagnosis[]" placeholder="Add diagnosis" value="{{ diag.description }}">
+                                      <div class="input-group-append">
+                                        <button class="btn btn-outline-primary" type="button" onclick="removeItem(this)">
+                                          <i class="fas fa-times"></i>
+                                        </button>
+                                      </div>
+                                    </div>
+                                  {% empty %}
+                                    <div class="input-group mb-2">
+                                      <input type="text" class="form-control" name="diagnosis[]" placeholder="Add diagnosis" value="">
+                                      <div class="input-group-append">
+                                        <button class="btn btn-outline-primary" type="button" onclick="removeItem(this)">
+                                          <i class="fas fa-times"></i>
+                                        </button>
+                                      </div>
+                                    </div>
+                                  {% endfor %}
+                                </div>
+                                <div class="d-flex justify-content-between align-items-center">
+                                  <button type="button" class="btn btn-sm btn-primary" onclick="addDiagnosis()">
+                                    <i class="fas fa-plus"></i> Add Diagnosis
+                                  </button>
+                                  <small class="text-muted">{{previousDiagnosisUpdateTime}}</small>
+                                </div>
+                                <button type="submit" class="d-none">Save Diagnoses</button>
+                              </form>
                             </div>
                         </div>
                         <br>
