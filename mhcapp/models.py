@@ -265,3 +265,18 @@ class Medication(models.Model):
         
     def __str__(self):
         return f"{self.description} - {self.appointment}"
+    
+# Previous Diagnosis models
+class PreviousDiagnosis(models.Model):
+    """Model to store previous diagnosis information for appointments"""
+    appointment = models.ForeignKey(Appointment, on_delete=models.CASCADE, related_name='previous_diagnoses')
+    description = models.CharField(max_length=255)
+    created_by = models.ForeignKey(User, on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        ordering = ['-updated_at']
+        
+    def __str__(self):
+        return f"{self.description} - {self.appointment}"
