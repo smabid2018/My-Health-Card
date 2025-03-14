@@ -24,4 +24,7 @@ urlpatterns = [
     path("techreqdetails/", views.techreqdetails, name="techreqdetails"),
     path("ongoingMedication/", views.ongoingMedication, name="ongoingMedication"),
     path("previousDiagnosis/", views.previousDiagnosis, name="previousDiagnosis"),
+    path("chiefComplain/", views.chiefComplain, name="chiefComplain"),
+    path("currentDiagnosis/", views.currentDiagnosis, name="currentDiagnosis"),
+    path('treatmentPlan/', views.treatmentPlan, name='treatmentPlan'),
 ]
