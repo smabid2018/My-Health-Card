@@ -250,3 +250,18 @@ class Subtest(models.Model):
     
     def __str__(self):
         return f"{self.test.name} - {self.name}"
+    
+# Ongoing Medication models
+class Medication(models.Model):
+    """Model to store medication information for appointments"""
+    appointment = models.ForeignKey(Appointment, on_delete=models.CASCADE, related_name='medications')
+    description = models.CharField(max_length=255)
+    created_by = models.ForeignKey(User, on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        ordering = ['-updated_at']
+        
+    def __str__(self):
+        return f"{self.description} - {self.appointment}"
