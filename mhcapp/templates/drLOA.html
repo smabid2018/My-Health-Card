@@ -73,7 +73,7 @@
                                     <div class="input-group mb-2">
                                       <input type="text" class="form-control" name="medication[]" placeholder="Add medication" value="{{ med.description }}">
                                       <div class="input-group-append">
-                                        <button class="btn btn-outline-primary" type="button" onclick="removeItem(this)">
+                                        <button class="btn btn-outline-primary" type="button" onclick="removeItemMedication(this)">
                                           <i class="fas fa-times"></i>
                                         </button>
                                       </div>
@@ -82,7 +82,7 @@
                                     <div class="input-group mb-2">
                                       <input type="text" class="form-control" name="medication[]" placeholder="Add medication" value="">
                                       <div class="input-group-append">
-                                        <button class="btn btn-outline-primary" type="button" onclick="removeItem(this)">
+                                        <button class="btn btn-outline-primary" type="button" onclick="removeItemMedication(this)">
                                           <i class="fas fa-times"></i>
                                         </button>
                                       </div>
@@ -98,27 +98,62 @@
                                 <button type="submit" class="d-none">Save Medications</button>
                               </form>
                             </div>
+
+                            <script>
+                              // Function to add a new medication input field
+                              function addMedication() {
+                                const container = document.getElementById('medication-container');
+                                const inputGroup = document.createElement('div');
+                                inputGroup.className = 'input-group mb-2';
+                                inputGroup.innerHTML = `
+                                  <input type="text" class="form-control" name="medication[]" placeholder="Add medication">
+                                  <div class="input-group-append">
+                                    <button class="btn btn-outline-primary" type="button" onclick="removeItemMedication(this)">
+                                      <i class="fas fa-times"></i>
+                                    </button>
+                                  </div>
+                                `;
+                                container.appendChild(inputGroup);
+                                
+                                // Focus the new input
+                                inputGroup.querySelector('input').focus();
+                              }
+                              
+                              // Function to remove an item in the ongoing medication section
+                              function removeItemMedication(button) {
+                                const inputGroup = button.closest('.input-group');
+                                
+                                // Only remove if it's not the last input group
+                                const container = document.getElementById('medication-container');
+                                if (container.querySelectorAll('.input-group').length > 1) {
+                                  inputGroup.remove();
+                                } else {
+                                  // If it's the last one, just clear the value
+                                  inputGroup.querySelector('input').value = '';
+                                }
+                              }
+                            </script>
                             <!-- Previous Diagnosis -->
                             <div class="col-4 diagnosis">
                               <h3 class="section-title" style="border-bottom: 1px solid #4f1915;">Previous Diagnoses</h3>
-                              <form id="diagnosisForm" method="post" action="{% url 'previousDiagnosis' %}">
+                              <form id="previousDiagnosisForm" method="post" action="{% url 'previousDiagnosis' %}">
                                 {% csrf_token %}
                                 <input type="hidden" name="appointment_id" value="{{ appointment.appointment_id }}">
-                                <div class="mb-3" id="diagnosis-container">
+                                <div class="mb-3" id="previous-diagnosis-container">
                                   {% for diag in previousDiagnosis %}
                                     <div class="input-group mb-2">
-                                      <input type="text" class="form-control" name="diagnosis[]" placeholder="Add diagnosis" value="{{ diag.description }}">
+                                      <input type="text" class="form-control" name="previous_diagnosis[]" placeholder="Add previous diagnosis" value="{{ diag.description }}">
                                       <div class="input-group-append">
-                                        <button class="btn btn-outline-primary" type="button" onclick="removeItem(this)">
+                                        <button class="btn btn-outline-primary" type="button" onclick="removeItemPreviousDiagnosis(this)">
                                           <i class="fas fa-times"></i>
                                         </button>
                                       </div>
                                     </div>
                                   {% empty %}
                                     <div class="input-group mb-2">
-                                      <input type="text" class="form-control" name="diagnosis[]" placeholder="Add diagnosis" value="">
+                                      <input type="text" class="form-control" name="previous_diagnosis[]" placeholder="Add previous diagnosis" value="">
                                       <div class="input-group-append">
-                                        <button class="btn btn-outline-primary" type="button" onclick="removeItem(this)">
+                                        <button class="btn btn-outline-primary" type="button" onclick="removeItemPreviousDiagnosis(this)">
                                           <i class="fas fa-times"></i>
                                         </button>
                                       </div>
@@ -126,7 +161,7 @@
                                   {% endfor %}
                                 </div>
                                 <div class="d-flex justify-content-between align-items-center">
-                                  <button type="button" class="btn btn-sm btn-primary" onclick="addDiagnosis()">
+                                  <button type="button" class="btn btn-sm btn-primary" onclick="addPreviousDiagnosis()">
                                     <i class="fas fa-plus"></i> Add Diagnosis
                                   </button>
                                   <small class="text-muted">{{previousDiagnosisUpdateTime}}</small>
@@ -134,6 +169,41 @@
                                 <button type="submit" class="d-none">Save Diagnoses</button>
                               </form>
                             </div>
+
+                            <script>
+                              // Function to add a new previous diagnosis input field
+                              function addPreviousDiagnosis() {
+                                const container = document.getElementById('previous-diagnosis-container');
+                                const inputGroup = document.createElement('div');
+                                inputGroup.className = 'input-group mb-2';
+                                inputGroup.innerHTML = `
+                                  <input type="text" class="form-control" name="previous_diagnosis[]" placeholder="Add previous diagnosis">
+                                  <div class="input-group-append">
+                                    <button class="btn btn-outline-primary" type="button" onclick="removeItemPreviousDiagnosis(this)">
+                                      <i class="fas fa-times"></i>
+                                    </button>
+                                  </div>
+                                `;
+                                container.appendChild(inputGroup);
+                                
+                                // Focus the new input
+                                inputGroup.querySelector('input').focus();
+                              }
+                              
+                              // Function to remove an item in the previous diagnosis section
+                              function removeItemPreviousDiagnosis(button) {
+                                const inputGroup = button.closest('.input-group');
+                                
+                                // Only remove if it's not the last input group
+                                const container = document.getElementById('previous-diagnosis-container');
+                                if (container.querySelectorAll('.input-group').length > 1) {
+                                  inputGroup.remove();
+                                } else {
+                                  // If it's the last one, just clear the value
+                                  inputGroup.querySelector('input').value = '';
+                                }
+                              }
+                            </script>
                         </div>
                         <br>
                         <!-- Second row content -->
@@ -148,13 +218,78 @@
                                 <li>Abdomen: Soft, non-tender</li>
                               </ul>
                             </div>
+
                             <!-- Chief Complain -->
                             <div class="col-5 chief-complain" style="width: 50%; padding-right: 5px;">
-                                <h3 class="section-title" style="border-bottom: 1px solid #4f1915;">Chief Complain</h3>
-                                <p>Chief Complain: Cough with sputum</p>
-                                <p>Duration: 3 days</p>
-                                <p>Severity: Moderate</p>
+                              <h3 class="section-title" style="border-bottom: 1px solid #4f1915;">Chief Complain</h3>
+                              <form id="chiefComplainForm" method="post" action="{% url 'chiefComplain' %}">
+                                {% csrf_token %}
+                                <input type="hidden" name="appointment_id" value="{{ appointment.appointment_id }}">
+                                <div class="mb-3" id="chief-complain-container">
+                                  {% for complain in chiefComplains %}
+                                    <div class="input-group mb-2">
+                                      <input type="text" class="form-control" name="chief_complain[]" placeholder="Add chief complain" value="{{ complain.description }}">
+                                      <div class="input-group-append">
+                                        <button class="btn btn-outline-primary" type="button" onclick="removeItemChiefComplain(this)">
+                                          <i class="fas fa-times"></i>
+                                        </button>
+                                      </div>
+                                    </div>
+                                  {% empty %}
+                                    <div class="input-group mb-2">
+                                      <input type="text" class="form-control" name="chief_complain[]" placeholder="Add chief complain" value="">
+                                      <div class="input-group-append">
+                                        <button class="btn btn-outline-primary" type="button" onclick="removeItemChiefComplain(this)">
+                                          <i class="fas fa-times"></i>
+                                        </button>
+                                      </div>
+                                    </div>
+                                  {% endfor %}
+                                </div>
+                                <div class="d-flex justify-content-between align-items-center">
+                                  <button type="button" class="btn btn-sm btn-primary" onclick="addChiefComplain()">
+                                    <i class="fas fa-plus"></i> Add Chief Complain
+                                  </button>
+                                  <small class="text-muted">{{chiefComplainUpdateTime}}</small>
+                                </div>
+                                <button type="submit" class="d-none">Save Chief Complains</button>
+                              </form>
                             </div>
+
+                            <script>
+                              // Function to add a new chief complain input field
+                              function addChiefComplain() {
+                                const container = document.getElementById('chief-complain-container');
+                                const inputGroup = document.createElement('div');
+                                inputGroup.className = 'input-group mb-2';
+                                inputGroup.innerHTML = `
+                                  <input type="text" class="form-control" name="chief_complain[]" placeholder="Add chief complain">
+                                  <div class="input-group-append">
+                                    <button class="btn btn-outline-primary" type="button" onclick="removeItemChiefComplain(this)">
+                                      <i class="fas fa-times"></i>
+                                    </button>
+                                  </div>
+                                `;
+                                container.appendChild(inputGroup);
+                                
+                                // Focus the new input
+                                inputGroup.querySelector('input').focus();
+                              }
+                              
+                              // Function to remove an item in the chief complain section
+                              function removeItemChiefComplain(button) {
+                                const inputGroup = button.closest('.input-group');
+                                
+                                // Only remove if it's not the last input group
+                                const container = document.getElementById('chief-complain-container');
+                                if (container.querySelectorAll('.input-group').length > 1) {
+                                  inputGroup.remove();
+                                } else {
+                                  // If it's the last one, just clear the value
+                                  inputGroup.querySelector('input').value = '';
+                                }
+                              }
+                            </script>
                             <!-- Investigation -->
                             <div class="col-4 investigation" style="width: 50%; padding-left: 5px;">
                                 <h3 class="section-title" style="border-bottom: 1px solid #4f1915;">Investigation</h3>
@@ -171,23 +306,147 @@
                         <!-- Third row content -->
                         <div class="row ml-0 justify-content-around" style="min-height: 21vh;">
                             <!-- Diagnosis -->
-                            <div class="col-2 diagnosis">
-                                <h3 class="section-title" style="border-bottom: 1px solid #4f1915;">Diagnosis</h3>
-                                <ul class="diagnosis-list">
-                                    <li>Acute Bronchitis</li>
-                                    <li>Acute Sinusitis</li>
-                                    <li>Acute tonsilitis</li>
-                                </ul>
+                            <div class="col-3 diagnosis">
+                              <h3 class="section-title" style="border-bottom: 1px solid #4f1915;">Diagnosis</h3>
+                              <form id="diagnosisForm" method="post" action="{% url 'currentDiagnosis' %}">
+                                {% csrf_token %}
+                                <input type="hidden" name="appointment_id" value="{{ appointment.appointment_id }}">
+                                <div class="mb-3" id="diagnosis-container">
+                                  {% for diag in currentDiagnosis %}
+                                    <div class="input-group mb-2">
+                                      <input type="text" class="form-control" name="diagnosis[]" placeholder="Add diagnosis" value="{{ diag.description }}">
+                                      <div class="input-group-append">
+                                        <button class="btn btn-outline-primary" type="button" onclick="removeItemDiagnosis(this)">
+                                          <i class="fas fa-times"></i>
+                                        </button>
+                                      </div>
+                                    </div>
+                                  {% empty %}
+                                    <div class="input-group mb-2">
+                                      <input type="text" class="form-control" name="diagnosis[]" placeholder="Add diagnosis" value="">
+                                      <div class="input-group-append">
+                                        <button class="btn btn-outline-primary" type="button" onclick="removeItemDiagnosis(this)">
+                                          <i class="fas fa-times"></i>
+                                        </button>
+                                      </div>
+                                    </div>
+                                  {% endfor %}
+                                </div>
+                                <div class="d-flex justify-content-between align-items-center">
+                                  <button type="button" class="btn btn-sm btn-primary" onclick="addDiagnosis()">
+                                    <i class="fas fa-plus"></i>
+                                  </button>
+                                  <small class="text-muted">{{currentDiagnosisUpdateTime}}</small>
+                                </div>
+                                <button type="submit" class="d-none">Save Diagnoses</button>
+                              </form>
                             </div>
-                            <!-- Treatment -->
-                            <div class="col-9 medication">
+
+                            <script>
+                              // Function to add a new diagnosis input field
+                              function addDiagnosis() {
+                                const container = document.getElementById('diagnosis-container');
+                                const inputGroup = document.createElement('div');
+                                inputGroup.className = 'input-group mb-2';
+                                inputGroup.innerHTML = `
+                                  <input type="text" class="form-control" name="diagnosis[]" placeholder="Add diagnosis">
+                                  <div class="input-group-append">
+                                    <button class="btn btn-outline-primary" type="button" onclick="removeItemDiagnosis(this)">
+                                      <i class="fas fa-times"></i>
+                                    </button>
+                                  </div>
+                                `;
+                                container.appendChild(inputGroup);
+                                
+                                // Focus the new input
+                                inputGroup.querySelector('input').focus();
+                              }
+                              
+                              // Function to remove an item in the current diagnosis section
+                              function removeItemDiagnosis(button) {
+                                const inputGroup = button.closest('.input-group');
+                                
+                                // Only remove if it's not the last input group
+                                const container = document.getElementById('diagnosis-container');
+                                if (container.querySelectorAll('.input-group').length > 1) {
+                                  inputGroup.remove();
+                                } else {
+                                  // If it's the last one, just clear the value
+                                  inputGroup.querySelector('input').value = '';
+                                }
+                              }
+                            </script>
+                            <!-- Treatment Plan -->
+                            <div class="col-8 treatment-plan medication">
                               <h3 class="section-title" style="border-bottom: 1px solid #4f1915;">Treatment Plan</h3>
-                              <ul class="medication-list">
-                                <li>Tab. Paracetamol PO TDS for 3 days</li>
-                                <li>Cap. Amoxicillin PO BD for 5 days</li>
-                                <li>Syr. Cough Expectorant 10ml TDS</li>
-                              </ul>
+                              <form id="treatmentPlanForm" method="post" action="{% url 'treatmentPlan' %}">
+                                {% csrf_token %}
+                                <input type="hidden" name="appointment_id" value="{{ appointment.appointment_id }}">
+                                <div class="mb-3" id="treatment-plan-container">
+                                  {% for plan in treatmentPlans %}
+                                    <div class="input-group mb-2">
+                                      <input type="text" class="form-control" name="treatment_plan[]" placeholder="Add treatment plan" value="{{ plan.description }}">
+                                      <div class="input-group-append">
+                                        <button class="btn btn-outline-primary" type="button" onclick="removeItemTreatmentPlan(this)">
+                                          <i class="fas fa-times"></i>
+                                        </button>
+                                      </div>
+                                    </div>
+                                  {% empty %}
+                                    <div class="input-group mb-2">
+                                      <input type="text" class="form-control" name="treatment_plan[]" placeholder="Add treatment plan" value="">
+                                      <div class="input-group-append">
+                                        <button class="btn btn-outline-primary" type="button" onclick="removeItemTreatmentPlan(this)">
+                                          <i class="fas fa-times"></i>
+                                        </button>
+                                      </div>
+                                    </div>
+                                  {% endfor %}
+                                </div>
+                                <div class="d-flex justify-content-between align-items-center">
+                                  <button type="button" class="btn btn-sm btn-primary" onclick="addTreatmentPlan()">
+                                    <i class="fas fa-plus"></i> Add Treatment Plan
+                                  </button>
+                                  <small class="text-muted">{{treatmentPlanUpdateTime}}</small>
+                                </div>
+                                <button type="submit" class="d-none">Save Treatment Plans</button>
+                              </form>
                             </div>
+
+                            <script>
+                              // Function to add a new treatment plan input field
+                              function addTreatmentPlan() {
+                                const container = document.getElementById('treatment-plan-container');
+                                const inputGroup = document.createElement('div');
+                                inputGroup.className = 'input-group mb-2';
+                                inputGroup.innerHTML = `
+                                  <input type="text" class="form-control" name="treatment_plan[]" placeholder="Add treatment plan">
+                                  <div class="input-group-append">
+                                    <button class="btn btn-outline-primary" type="button" onclick="removeItemTreatmentPlan(this)">
+                                      <i class="fas fa-times"></i>
+                                    </button>
+                                  </div>
+                                `;
+                                container.appendChild(inputGroup);
+                                
+                                // Focus the new input
+                                inputGroup.querySelector('input').focus();
+                              }
+                              
+                              // Function to remove an item in the treatment plan section
+                              function removeItemTreatmentPlan(button) {
+                                const inputGroup = button.closest('.input-group');
+                                
+                                // Only remove if it's not the last input group
+                                const container = document.getElementById('treatment-plan-container');
+                                if (container.querySelectorAll('.input-group').length > 1) {
+                                  inputGroup.remove();
+                                } else {
+                                  // If it's the last one, just clear the value
+                                  inputGroup.querySelector('input').value = '';
+                                }
+                              }
+                            </script>
                         </div>
                     </div>
                     <!-- Profile Card -->
@@ -255,38 +514,5 @@
                     </div>
                     </div>
 
-                    <script>
-                      // Function to add a new medication input field
-                      function addMedication() {
-                        const container = document.getElementById('medication-container');
-                        const inputGroup = document.createElement('div');
-                        inputGroup.className = 'input-group mb-2';
-                        inputGroup.innerHTML = `
-                          <input type="text" class="form-control" name="medication[]" placeholder="Add medication">
-                          <div class="input-group-append">
-                            <button class="btn btn-outline-primary" type="button" onclick="removeItem(this)">
-                              <i class="fas fa-times"></i>
-                            </button>
-                          </div>
-                        `;
-                        container.appendChild(inputGroup);
-                        
-                        // Focus the new input
-                        inputGroup.querySelector('input').focus();
-                      }
-                      
-                      // Function to remove an item
-                      function removeItem(button) {
-                        const inputGroup = button.closest('.input-group');
-                        
-                        // Only remove if it's not the last input group
-                        const container = document.getElementById('medication-container');
-                        if (container.querySelectorAll('.input-group').length > 1) {
-                          inputGroup.remove();
-                        } else {
-                          // If it's the last one, just clear the value
-                          inputGroup.querySelector('input').value = '';
-                        }
-                      }
-                    </script>
+                    
                     {%  endblock%}
