@@ -1,62 +1,59 @@
 import datetime
+from django.http import HttpResponseRedirect
 from django.shortcuts import render, HttpResponse, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.urls import reverse
-from .models import Patient, Doctor, AdminProxy, NurseProxy, LabTechProxy, RadiographerProxy, User, Appointment, VitalsRecord  # Add other models as needed
+from .models import Medication, Patient, Doctor, AdminProxy, NurseProxy, LabTechProxy, RadiographerProxy, User, Appointment, VitalsRecord  # Add other models as needed
 
 # views logic.
+
+def login_view(request):
+    if request.method == 'POST':
+        phone = request.POST.get('phone')
+        password = request.POST.get('password')
+        print(f'phone: {phone}, password: {password}')
+        
+        # Authenticate using phone as username (since we're using phone for auth)
+        user = authenticate(request, username=phone, password=password)  # Changed parameter
+        print(f'user: {user}')
+        
+        if user is not None:
+            print(f'user detected: {user.role}, logging in...')
+            login(request, user)
+            
+            # Redirect based on role
+            if user.role == 'patient':
+                print(f'user detected: {user.role}, redirecting to patient_dashboard...')
+                return redirect('patient_dashboard')
+            elif user.role == 'doctor':
+                print(f'user detected: {user.role}, redirecting to doctor_dashboard...')
+                return redirect('doctor_dashboard')
+            elif user.role == 'admin':
+                print(f'user detected: {user.role}, redirecting to admin_dashboard...')
+                return redirect('admin_dashboard')
+            elif user.role == 'nurse':
+                print(f'user detected: {user.role}, redirecting to nursedash...')
+                return redirect('nursedash')
+            elif user.role == 'labt':
+                print(f'user detected: {user.role}, redirecting to techdash...')
+                return redirect('techdash')
+            elif user.role == 'rg':
+                print(f'user detected: {user.role}, redirecting to radiographerdash...')
+                return redirect('radiographerdash')
+
+            # Add other roles as needed
+        else:
+            messages.error(request, 'Invalid phone number or password')
+    
+    return render(request, 'login.html')
+
 
 def home(request):
     return render(request, "drdash.html")
 
-# Update both views to handle the appointment_id parameter
-def drloa(request):
-    appointment_id = request.GET.get('appointment_id')
-    
-    try:
-        if appointment_id:
-            # Get the appointment object
-            appointment = Appointment.objects.get(appointment_id=appointment_id)
-            latest_vitals = VitalsRecord.objects.filter(appointment=appointment).order_by('-created_at').first()
-            print(f'Appointment: {appointment}')
-            print(f'Latest vitals: {latest_vitals}')
-            
-            context = {
-                'appointment': appointment,
-                'patient': appointment.patient,
-                'doctor': appointment.doctor,
-                'current_datetime': datetime.datetime.now(),
-                'latest_vitals': latest_vitals,
-            }
-        else:
-            context = {
-                'error_message': 'No appointment ID provided',
-                'current_datetime': datetime.datetime.now(),
-            }
-        
-        return render(request, "drLOA.html", context)
-    except Exception as e:
-        context = {
-            'error_message': str(e),
-            'current_datetime': datetime.datetime.now(),
-        }
-        return render(request, "drLOA.html", context)
 
-
-def loa(request):
-    if request.method == 'POST':
-        appointment_id = request.POST.get('appointment_id')
-
-        # Process submitted medications
-        medications = request.POST.getlist('medication[]')
-        print(f'LOA form submitted: appointment_id: {appointment_id}, loa_notes: {medications}')
-        
-        
-        messages.success(request, 'LOA saved successfully!')
-        return redirect('doctor_dashboard')
-    return render(request, "loa.html")
 
 # def admindash(request):
 #     return render(request, "admindash.html")
@@ -419,42 +416,102 @@ def radiographerdash(request):
     }
     return render(request, "radiographerdash.html", context)
 
-def login_view(request):
-    if request.method == 'POST':
-        phone = request.POST.get('phone')
-        password = request.POST.get('password')
-        print(f'phone: {phone}, password: {password}')
-        
-        # Authenticate using phone as username (since we're using phone for auth)
-        user = authenticate(request, username=phone, password=password)  # Changed parameter
-        print(f'user: {user}')
-        
-        if user is not None:
-            print(f'user detected: {user.role}, logging in...')
-            login(request, user)
-            
-            # Redirect based on role
-            if user.role == 'patient':
-                print(f'user detected: {user.role}, redirecting to patient_dashboard...')
-                return redirect('patient_dashboard')
-            elif user.role == 'doctor':
-                print(f'user detected: {user.role}, redirecting to doctor_dashboard...')
-                return redirect('doctor_dashboard')
-            elif user.role == 'admin':
-                print(f'user detected: {user.role}, redirecting to admin_dashboard...')
-                return redirect('admin_dashboard')
-            elif user.role == 'nurse':
-                print(f'user detected: {user.role}, redirecting to nursedash...')
-                return redirect('nursedash')
-            elif user.role == 'labt':
-                print(f'user detected: {user.role}, redirecting to techdash...')
-                return redirect('techdash')
-            elif user.role == 'rg':
-                print(f'user detected: {user.role}, redirecting to radiographerdash...')
-                return redirect('radiographerdash')
 
-            # Add other roles as needed
-        else:
-            messages.error(request, 'Invalid phone number or password')
+# Update both views to handle the appointment_id parameter
+@login_required
+def drloa(request):
+    appointment_id = request.GET.get('appointment_id')
     
-    return render(request, 'login.html')
+    try:
+        if appointment_id:
+            # Get the appointment object
+            appointment = get_object_or_404(Appointment, appointment_id=appointment_id)
+            latest_vitals = VitalsRecord.objects.filter(appointment=appointment).order_by('-created_at').first()
+            ongoingMedication = Medication.objects.filter(appointment=appointment)
+            ongoingMedicationUpdateTime = ongoingMedication.latest('created_at').created_at if ongoingMedication.exists() else None
+            print(f'Appointment: {appointment}')
+            print(f'onGoingMedication: {ongoingMedication}')
+            
+            context = {
+                'appointment': appointment,
+                'patient': appointment.patient,
+                'doctor': appointment.doctor,
+                'current_datetime': datetime.datetime.now(),
+                'latest_vitals': latest_vitals,
+                'ongoingMedication': ongoingMedication,
+                'ongoingMedicationUpdateTime': ongoingMedicationUpdateTime,
+            }
+        else:
+            context = {
+                'error_message': 'No appointment ID provided',
+                'current_datetime': datetime.datetime.now(),
+            }
+        
+        return render(request, "drLOA.html", context)
+    except Exception as e:
+        context = {
+            'error_message': str(e),
+            'current_datetime': datetime.datetime.now(),
+        }
+        return render(request, "drLOA.html", context)
+
+
+def loa(request):
+    if request.method == 'POST':
+        appointment_id = request.POST.get('appointment_id')
+
+        # Process submitted medications
+        medications = request.POST.getlist('medication[]')
+        print(f'LOA form submitted: appointment_id: {appointment_id}, loa_notes: {medications}')
+        
+        
+        messages.success(request, 'LOA saved successfully!')
+        return redirect('doctor_dashboard')
+    return render(request, "loa.html")
+
+
+@login_required
+def ongoingMedication(request):
+    """Handle the submission of medication form data"""
+    if request.method != 'POST':
+        messages.error(request, "Invalid request method.")
+        return redirect('doctor_dashboard')
+
+    try:
+        appointment_id = request.POST.get('appointment_id')
+        if not appointment_id:
+            messages.error(request, "Appointment ID is required.")
+            return redirect('doctor_dashboard')
+        
+        appointment = get_object_or_404(Appointment, appointment_id=appointment_id)
+        
+        # Verify the logged-in user is the assigned doctor
+        if request.user != appointment.doctor.user:
+            messages.error(request, "You are not authorized to update this appointment.")
+            return redirect('doctor_dashboard')
+
+        # Process submitted medications
+        medications = request.POST.getlist('medication[]')
+        
+        # Remove existing medications for this appointment
+        Medication.objects.filter(appointment=appointment).delete()
+        
+        # Create new medication records
+        for med in medications:
+            if med.strip():  # Only save non-empty entries
+                Medication.objects.create(
+                    appointment=appointment,
+                    description=med.strip(),
+                    created_by=request.user
+                )
+        print(f'Medications saved for appointment ID: {appointment_id}')
+        messages.success(request, 'Medications have been updated successfully.')
+
+        # Generate the URL with the query parameter
+        redirect_url = reverse('drloa') + f'?appointment_id={appointment_id}'
+        return HttpResponseRedirect(redirect_url)
+
+    except Exception as e:
+        print(f"Error saving medications: {str(e)}")
+        messages.error(request, f"Error: {str(e)}")
+        return redirect('doctor_dashboard')
