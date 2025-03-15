@@ -251,6 +251,24 @@ class Subtest(models.Model):
     def __str__(self):
         return f"{self.test.name} - {self.name}"
     
+# Radiology Test models
+class Modality(models.Model):
+    name = models.CharField(max_length=100, unique=True)
+    
+    def __str__(self):
+        return self.name
+
+class RadiologyTest(models.Model):
+    name = models.CharField(max_length=200)
+    modality = models.ForeignKey(Modality, on_delete=models.CASCADE, related_name='tests')
+    
+    class Meta:
+        unique_together = ('name', 'modality')  # Prevent duplicate entries
+    
+    def __str__(self):
+        return f"{self.modality.name} - {self.name}"
+    
+    
 # Ongoing Medication models
 class Medication(models.Model):
     """Model to store medication information for appointments"""
@@ -326,3 +344,19 @@ class TreatmentPlan(models.Model):
         
     def __str__(self):
         return f"{self.description} - {self.appointment}"
+    
+# physical examination models
+class PhysicalExam(models.Model):
+    appointment = models.OneToOneField(Appointment, on_delete=models.CASCADE, related_name='physical_exam')
+    general = models.TextField(null=True, blank=True)
+    cns = models.TextField(null=True, blank=True)
+    cvs = models.TextField(null=True, blank=True)
+    rs = models.TextField(null=True, blank=True)
+    abdomen = models.TextField(null=True, blank=True)
+    extremities = models.TextField(null=True, blank=True)
+    created_by = models.ForeignKey(User, on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"Physical Exam for {self.appointment}"
