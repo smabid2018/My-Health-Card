@@ -27,4 +27,5 @@ urlpatterns = [
     path("chiefComplain/", views.chiefComplain, name="chiefComplain"),
     path("currentDiagnosis/", views.currentDiagnosis, name="currentDiagnosis"),
     path('treatmentPlan/', views.treatmentPlan, name='treatmentPlan'),
+    path('physicalExam/', views.physicalExam, name='physicalExam'),
 ]
