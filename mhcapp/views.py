@@ -5,7 +5,11 @@ from django.contrib.auth import authenticate, login
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.urls import reverse
-from .models import ChiefComplain, CurrentDiagnosis, Medication, Patient, Doctor, AdminProxy, NurseProxy, LabTechProxy, PreviousDiagnosis, RadiographerProxy, TreatmentPlan, User, Appointment, VitalsRecord  # Add other models as needed
+
+from .models import ChiefComplain, CurrentDiagnosis, LabTest, Medication, Modality, Patient, Doctor, AdminProxy, NurseProxy, LabTechProxy, PhysicalExam, PreviousDiagnosis, RadiographerProxy, RadiologyTest, Subtest, TreatmentPlan, User, Appointment, VitalsRecord  # Add other models as needed
+
+import json
+from django.core.serializers.json import DjangoJSONEncoder
 
 # views logic.
 
@@ -431,19 +435,51 @@ def drloa(request):
             ongoingMedicationUpdateTime = ongoingMedication.latest('created_at').created_at if ongoingMedication.exists() else None
             previousDiagnosis = PreviousDiagnosis.objects.filter(appointment=appointment)
             previousDiagnosisUpdateTime = previousDiagnosis.latest('created_at').created_at if previousDiagnosis.exists() else None
+            physical_exam = PhysicalExam.objects.filter(appointment=appointment).first()  # Retrieve as a single object
             chiefComplains = ChiefComplain.objects.filter(appointment=appointment)
             chiefComplainUpdateTime = chiefComplains.latest('created_at').created_at if chiefComplains.exists() else None
             currentDiagnosis = CurrentDiagnosis.objects.filter(appointment=appointment)
             currentDiagnosisUpdateTime = currentDiagnosis.latest('created_at').created_at if currentDiagnosis.exists() else None
             treatmentPlans = TreatmentPlan.objects.filter(appointment=appointment)
             treatmentPlanUpdateTime = treatmentPlans.latest('created_at').created_at if treatmentPlans.exists() else None
-            print(f'Appointment: {appointment}')
-            print(f'ongoingMedication: {ongoingMedication}')
-            print(f'previousDiagnosis of the patient before context: {previousDiagnosis}')
-            print(f'chiefComplains: {chiefComplains}')
-            print(f'currentDiagnosis: {currentDiagnosis}')
-            print(f'treatmentPlans: {treatmentPlans}')
             
+            # Fetch individual tests and test groups
+            labtest_subsets = Subtest.objects.all()
+            labtest_groups = LabTest.objects.all()
+            radiotest_subsets = RadiologyTest.objects.all()
+            radiotest_groups = Modality.objects.all()
+            
+            # Build the investigations list
+            investigations = []
+
+            for group in labtest_groups:
+                investigations.append({
+                    "id": group.id,
+                    "type": "lab_group",
+                    "name": group.name
+                })
+
+            for subtest in labtest_subsets:
+                investigations.append({
+                    "id": subtest.id,
+                    "type": "lab_sub",
+                    "name": f"{subtest.name} ({subtest.test.name})"
+                })
+
+            for group in radiotest_groups:
+                investigations.append({
+                    "id": group.id,
+                    "type": "radio_group",
+                    "name": group.name
+                })
+
+            for test in radiotest_subsets:
+                investigations.append({
+                    "id": test.id,
+                    "type": "radio_sub",
+                    "name": f"{test.name} ({test.modality.name})"
+                })
+
             context = {
                 'appointment': appointment,
                 'patient': appointment.patient,
@@ -454,12 +490,18 @@ def drloa(request):
                 'ongoingMedicationUpdateTime': ongoingMedicationUpdateTime,
                 'previousDiagnosis': previousDiagnosis,
                 'previousDiagnosisUpdateTime': previousDiagnosisUpdateTime,
+                'physical_exam': physical_exam,
                 'chiefComplains': chiefComplains,
                 'chiefComplainUpdateTime': chiefComplainUpdateTime,
                 'currentDiagnosis': currentDiagnosis,
                 'currentDiagnosisUpdateTime': currentDiagnosisUpdateTime,
                 'treatmentPlans': treatmentPlans,
                 'treatmentPlanUpdateTime': treatmentPlanUpdateTime,
+                'labtest_groups': labtest_groups,
+                'labtest_subsets': labtest_subsets,
+                'radiotest_groups': radiotest_groups,
+                'radiotest_subsets': radiotest_subsets,
+                'investigations': json.dumps(investigations, cls=DjangoJSONEncoder)
             }
         else:
             context = {
@@ -582,7 +624,39 @@ def previousDiagnosis(request):
         print(f"Error saving diagnoses: {str(e)}")
         messages.error(request, f"Error: {str(e)}")
         return redirect('doctor_dashboard')
+
+@login_required
+def physicalExam(request):
+    appointment_id = request.POST.get('appointment_id')
+    print(f'appointment_id from physical exam: {appointment_id}')
     
+    if appointment_id:
+        appointment = get_object_or_404(Appointment, appointment_id=appointment_id)
+        physical_exam, created = PhysicalExam.objects.get_or_create(appointment=appointment, defaults={'created_by': request.user})
+        
+        if request.method == 'POST':
+            print('Physical exam form submitted')
+            physical_exam.general = request.POST.get('general')
+            physical_exam.cns = request.POST.get('cns')
+            physical_exam.cvs = request.POST.get('cvs')
+            physical_exam.rs = request.POST.get('rs')
+            physical_exam.abdomen = request.POST.get('abdomen')
+            physical_exam.extremities = request.POST.get('extremities')
+            physical_exam.save()
+            print('Physical exam saved successfully')
+            messages.success(request, 'Physical exam saved successfully')
+            return redirect(f'/drloa/?appointment_id={appointment_id}')
+        
+        context = {
+            'appointment': appointment,
+            'physical_exam': physical_exam,
+        }
+    else:
+        context = {
+            'error_message': 'No appointment ID provided',
+        }
+    
+    return render(request, "drLOA.html", context)
 
 @login_required
 def chiefComplain(request):
