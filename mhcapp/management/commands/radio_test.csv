@@ -1,0 +1,130 @@
+modality_name,test_name
+X-ray Imaging,Chest X-ray (CXR)
+X-ray Imaging,Abdominal X-ray
+X-ray Imaging,Skull X-ray
+X-ray Imaging,Spine X-ray (Cervical)
+X-ray Imaging,Spine X-ray (Thoracic)
+X-ray Imaging,Spine X-ray (Lumbar)
+X-ray Imaging,Pelvis X-ray
+X-ray Imaging,Extremity X-ray (Hand)
+X-ray Imaging,Extremity X-ray (Wrist)
+X-ray Imaging,Extremity X-ray (Elbow)
+X-ray Imaging,Extremity X-ray (Shoulder)
+X-ray Imaging,Extremity X-ray (Hip)
+X-ray Imaging,Extremity X-ray (Knee)
+X-ray Imaging,Extremity X-ray (Ankle)
+X-ray Imaging,Extremity X-ray (Foot)
+X-ray Imaging,Dental X-ray (Bitewing)
+X-ray Imaging,Dental X-ray (Panoramic)
+X-ray Imaging,Sinus X-ray
+X-ray Imaging,Mammography (Screening/Diagnostic)
+X-ray Imaging,Bone Density Scan (DEXA)
+X-ray Imaging,Sialography (Salivary Gland Imaging)
+X-ray Imaging,Hysterosalpingogram (HSG)
+X-ray Imaging,Barium Swallow (Esophagram)
+X-ray Imaging,Barium Enema
+X-ray Imaging,Upper GI Series
+X-ray Imaging,Small Bowel Follow-Through
+X-ray Imaging,Intravenous Pyelogram (IVP)
+X-ray Imaging,Retrograde Urethrogram
+X-ray Imaging,Myelogram (Spinal Canal Imaging)
+X-ray Imaging,Arthrogram (Joint Imaging)
+Computed Tomography (CT),CT Head
+Computed Tomography (CT),CT Cervical Spine
+Computed Tomography (CT),CT Chest (High-Resolution CT)
+Computed Tomography (CT),CT Abdomen/Pelvis
+Computed Tomography (CT),CT Angiography (Coronary)
+Computed Tomography (CT),CT Angiography (Pulmonary)
+Computed Tomography (CT),CT Angiography (Cerebral)
+Computed Tomography (CT),CT Angiography (Peripheral)
+Computed Tomography (CT),CT Urogram
+Computed Tomography (CT),CT Enterography
+Computed Tomography (CT),CT Paranasal Sinuses
+Computed Tomography (CT),CT Temporal Bone
+Computed Tomography (CT),CT Orbital Imaging
+Computed Tomography (CT),CT Neck (Soft Tissue)
+Computed Tomography (CT),CT Whole Body (Trauma Pan-Scan)
+Computed Tomography (CT),CT 3D Reconstruction (Bone/Organ)
+Computed Tomography (CT),CT Perfusion Imaging (Brain/Tumor)
+Computed Tomography (CT),CT Calcium Scoring (Heart)
+Computed Tomography (CT),CT-Guided Biopsy/Drainage
+Magnetic Resonance Imaging (MRI),MRI Brain (Routine)
+Magnetic Resonance Imaging (MRI),MRI Brain (Functional/fMRI)
+Magnetic Resonance Imaging (MRI),MRI Brain (Diffusion-Weighted)
+Magnetic Resonance Imaging (MRI),MRI Pituitary Gland
+Magnetic Resonance Imaging (MRI),MRI Cervical Spine
+Magnetic Resonance Imaging (MRI),MRI Thoracic Spine
+Magnetic Resonance Imaging (MRI),MRI Lumbar Spine
+Magnetic Resonance Imaging (MRI),MRI Whole Spine
+Magnetic Resonance Imaging (MRI),MRI Shoulder
+Magnetic Resonance Imaging (MRI),MRI Elbow
+Magnetic Resonance Imaging (MRI),MRI Wrist/Hand
+Magnetic Resonance Imaging (MRI),MRI Hip
+Magnetic Resonance Imaging (MRI),MRI Knee
+Magnetic Resonance Imaging (MRI),MRI Ankle/Foot
+Magnetic Resonance Imaging (MRI),MRI Cardiac (Heart)
+Magnetic Resonance Imaging (MRI),MRI Breast
+Magnetic Resonance Imaging (MRI),MRI Prostate
+Magnetic Resonance Imaging (MRI),MRI Pelvis
+Magnetic Resonance Imaging (MRI),MR Cholangiopancreatography (MRCP)
+Magnetic Resonance Imaging (MRI),MR Angiography (MRA)
+Magnetic Resonance Imaging (MRI),MR Venography (MRV)
+Magnetic Resonance Imaging (MRI),MR Enterography
+Magnetic Resonance Imaging (MRI),MR Spectroscopy (Brain)
+Magnetic Resonance Imaging (MRI),MSK MRI (Musculoskeletal)
+Ultrasound,Abdominal Ultrasound
+Ultrasound,Pelvic Ultrasound (Transabdominal/Transvaginal)
+Ultrasound,Obstetric Ultrasound (Anomaly)
+Ultrasound,Obstetric Ultrasound (Dating)
+Ultrasound,Obstetric Ultrasound (Growth)
+Ultrasound,Thyroid Ultrasound
+Ultrasound,Breast Ultrasound
+Ultrasound,Scrotal Ultrasound
+Ultrasound,Vascular Ultrasound (Carotid)
+Ultrasound,Vascular Ultrasound (Arterial)
+Ultrasound,Vascular Ultrasound (Venous)
+Ultrasound,Doppler Ultrasound (DVT)
+Ultrasound,Doppler Ultrasound (Deep Vein Thrombosis)
+Ultrasound,Echocardiography (Cardiac Ultrasound)
+Ultrasound,Renal Ultrasound
+Ultrasound,Bladder Ultrasound
+Ultrasound,Musculoskeletal Ultrasound (Rotator Cuff)
+Ultrasound,Musculoskeletal Ultrasound (Achilles Tendon)
+Ultrasound,Pediatric Hip Ultrasound
+Ultrasound,Ultrasound-Guided Biopsy
+Ultrasound,Elastography (Liver Fibrosis)
+Ultrasound,Contrast-Enhanced Ultrasound (CEUS)
+Nuclear Medicine,Bone Scan (Technetium-99m)
+Nuclear Medicine,PET Scan (FDG-PET for Cancer)
+Nuclear Medicine,Thyroid Uptake Scan (I-131/Technetium)
+Nuclear Medicine,V/Q Scan (Ventilation/Perfusion Lung Scan)
+Nuclear Medicine,HIDA Scan (Gallbladder Function)
+Nuclear Medicine,Gastric Emptying Study
+Nuclear Medicine,MUGA Scan (Cardiac Function)
+Nuclear Medicine,Parathyroid Scan
+Nuclear Medicine,GI Bleeding Scan
+Nuclear Medicine,Octreotide Scan (Neuroendocrine Tumors)
+Nuclear Medicine,Renal Scan (DMSA/MAG3)
+Nuclear Medicine,Liver/Spleen Scan
+Nuclear Medicine,Brain SPECT Scan
+Nuclear Medicine,Cardiac Stress Test (Thallium/Technetium)
+Interventional Radiology,Angiography (Peripheral)
+Interventional Radiology,Angiography (Cerebral)
+Interventional Radiology,Angiography (Coronary)
+Interventional Radiology,Angioplasty/Stent Placement
+Interventional Radiology,Embolization (Tumor)
+Interventional Radiology,Embolization (Aneurysm)
+Interventional Radiology,Thrombolysis (Clot Removal)
+Interventional Radiology,Biopsy (Liver)
+Interventional Radiology,Biopsy (Lung)
+Interventional Radiology,Biopsy (Breast)
+Interventional Radiology,Abscess Drainage
+Interventional Radiology,Vertebroplasty/Kyphoplasty
+Interventional Radiology,Radiofrequency Ablation (Tumor)
+Interventional Radiology,Transarterial Chemoembolization (TACE)
+Interventional Radiology,Transjugular Intrahepatic Portosystemic Shunt (TIPS)
+Specialized & Hybrid Imaging,PET-CT Scan
+Specialized & Hybrid Imaging,PET-MRI Scan
+Specialized & Hybrid Imaging,SPECT-CT Scan
+Specialized & Hybrid Imaging,Optical Coherence Tomography (OCT)
+Specialized & Hybrid Imaging,Thermography
