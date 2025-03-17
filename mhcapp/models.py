@@ -360,3 +360,47 @@ class PhysicalExam(models.Model):
 
     def __str__(self):
         return f"Physical Exam for {self.appointment}"
+    
+# Investigation models
+class Investigation(models.Model):
+    INVESTIGATION_STATUS_CHOICES = [
+        ('requested', 'Requested'),
+        ('completed', 'Completed'),
+        ('canceled', 'Canceled'),
+    ]
+
+    appointment = models.ForeignKey(Appointment, on_delete=models.CASCADE, related_name='investigations')
+    investigation_type = models.CharField(max_length=50)
+    investigation_id = models.IntegerField()
+    requested_at = models.DateTimeField(auto_now_add=True)
+    status = models.CharField(max_length=20, choices=INVESTIGATION_STATUS_CHOICES, default='requested')
+    requested_by = models.ForeignKey(User, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return f"Investigation {self.investigation_id} for {self.appointment} - {self.status}"
+
+    def get_investigation_name(self):
+        if self.investigation_type == 'lab_group':
+            return LabTest.objects.get(id=self.investigation_id).name
+        elif self.investigation_type == 'lab_sub':
+            subtest = Subtest.objects.get(id=self.investigation_id)
+            return f"{subtest.name} ({subtest.test.name})"
+        elif self.investigation_type == 'radio_group':
+            return Modality.objects.get(id=self.investigation_id).name
+        elif self.investigation_type == 'radio_sub':
+            test = RadiologyTest.objects.get(id=self.investigation_id)
+            return f"{test.name} ({test.modality.name})"
+        return "Unknown"
+    
+    def get_name(self):
+        if self.investigation_type == 'lab_group':
+            return LabTest.objects.get(id=self.investigation_id).name
+        elif self.investigation_type == 'lab_sub':
+            subtest = Subtest.objects.get(id=self.investigation_id)
+            return f"{subtest.name}"
+        elif self.investigation_type == 'radio_group':
+            return Modality.objects.get(id=self.investigation_id).name
+        elif self.investigation_type == 'radio_sub':
+            test = RadiologyTest.objects.get(id=self.investigation_id)
+            return f"{test.name}"
+        return "Unknown"
