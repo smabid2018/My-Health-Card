@@ -1,9 +1,9 @@
 {% extends 'drbase.html' %}
 {% block pagecontent %}
                     <!-- All content -->
-                    <div class="row">
+                    <div class="row ml-0" style="padding-top: 75px;">
                     <!-- Appointment content -->
-                    <div class="col-9 bg-gradient-light">
+                    <div class="col-9 bg-gradient-light p-2">
                         <!-- First row content -->
                         <div class="row justify-content-around">
                             <!-- Vitals -->
@@ -207,7 +207,7 @@
                         </div>
                         <br>
                         <!-- Second row content -->
-                        <div class="row justify-content-around " style="min-height: 400px;">
+                        <div class="row justify-content-around ml-0" style="min-height: 400px;">
                           <!-- Physical Examination -->
                           <!-- Physical Examination -->
                           <div class="col-3 physical-exam medication" style="height: auto;">
@@ -366,13 +366,14 @@
                                   }
                                 </script>
                                 <!-- Investigation -->
+                                <!-- Investigation -->
                                 <div class="col-6 ml-auto investigation">
                                   <h3 class="section-title" style="border-bottom: 1px solid #4f1915;">Investigation</h3>
                                   
-                                  <form id="investigationForm" method="post" action="#">
+                                  <form id="investigationForm" method="post" action="{% url 'request_investigation' %}">
                                       {% csrf_token %}
+                                      
                                       <div class="form-group">
-                                          <label for="investigationSearch">Search Investigation:</label>
                                           <input type="text" id="investigationSearch" class="form-control" placeholder="Type to search..." onkeyup="searchInvestigation()">
                                           <!-- Suggestions dropdown -->
                                           <ul id="investigationSuggestions" class="list-group mt-2" style="display: none;"></ul>
@@ -381,11 +382,85 @@
                                           <input type="hidden" name="investigation_id" id="investigationId">
                                           <input type="hidden" name="investigation_type" id="investigationType">
                                       </div>
-                              
+                                      <input type="hidden" name="appointment_id" value="{{appointment.appointment_id}}">
                                       <!-- Hidden submit button -->
                                       <button type="submit" id="submitInvestigationForm" style="display: none;"></button>
                                   </form>
-                              </div>
+
+                                  <!-- List of requested investigations -->
+                                  <!-- List of requested investigations -->
+                                  <div class="mt-1">
+                                    <ul class="list-group">
+                                        {% for investigation in requested_investigations %}
+                                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                <div class="d-flex flex-column w-100">
+                                                    <span class="investigation-name">{{ investigation.get_name }}</span>
+                                                    <div class="d-flex justify-content-between align-items-center w-100 mt-1">
+                                                        <span class="badge badge-info p-2 investigation-status">{{ investigation.get_status_display }}</span>
+                                                        <div class="d-flex align-items-center">
+                                                            <a href="#" class="btn btn-sm btn-outline-primary mr-1" title="View">
+                                                                <i class="fas fa-eye"></i>
+                                                            </a>
+                                                            {% if investigation.status == 'requested' %}
+                                                                <a href="#" class="btn btn-sm btn-outline-danger" title="Cancel">
+                                                                    <i class="fas fa-times"></i>
+                                                                </a>
+                                                            {% endif %}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </li>
+                                        {% empty %}
+                                            <li class="list-group-item text-center">No investigations requested</li>
+                                        {% endfor %}
+                                    </ul>
+                                  </div>
+
+                                  <style>
+                                    .list-group-item {
+                                        display: flex;
+                                        justify-content: space-between;
+                                        align-items: center;
+                                    }
+                                    .list-group-item .badge {
+                                        font-size: 0.8rem; /* Smaller font size for status */
+                                        padding: 0.5em;
+                                    }
+                                    .list-group-item .btn {
+                                        font-size: 0.9rem;
+                                        padding: 0.3em 0.6em;
+                                    }
+                                    .list-group-item .btn i {
+                                        font-size: 1.1rem;
+                                    }
+                                    .section-title {
+                                          font-size: 1rem;
+                                          color: #333;
+                                          /* margin-bottom: 10px; */
+                                      }
+                                      .font-weight-bold {
+                                          font-weight: bold;
+                                      }
+                                    .w-100 {
+                                        width: 100%;
+                                    }
+                                    .p-2 {
+                                        padding: 0.5rem;
+                                    }
+                                    .mr-1 {
+                                        margin-right: 0.25rem;
+                                    }
+                                    .mt-1 {
+                                        margin-top: 0.25rem;
+                                    }
+                                    .investigation-name {
+                                        font-size: 0.9rem; /* Smaller font size for investigation name */
+                                    }
+                                    .investigation-status {
+                                        font-size: 0.8rem; /* Smaller font size for status */
+                                    }
+                                  </style>
+                                </div>
 
                                 <!-- Embed the investigations data as JSON -->
                                 <script id="investigations-data" type="application/json">
@@ -429,6 +504,7 @@
                                       document.getElementById("investigationId").value = item.id;
                                       document.getElementById("investigationType").value = item.type;
                                       document.getElementById("investigationSuggestions").style.display = "none";
+                                      document.getElementById("submitInvestigationForm").click();
                                   }
                                 </script>
 
