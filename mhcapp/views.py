@@ -6,7 +6,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.urls import reverse
 
-from .models import ChiefComplain, CurrentDiagnosis, LabTest, Medication, Modality, Patient, Doctor, AdminProxy, NurseProxy, LabTechProxy, PhysicalExam, PreviousDiagnosis, RadiographerProxy, RadiologyTest, Subtest, TreatmentPlan, User, Appointment, VitalsRecord  # Add other models as needed
+from .models import ChiefComplain, CurrentDiagnosis, Investigation, LabTest, Medication, Modality, Patient, Doctor, AdminProxy, NurseProxy, LabTechProxy, PhysicalExam, PreviousDiagnosis, RadiographerProxy, RadiologyTest, Subtest, TreatmentPlan, User, Appointment, VitalsRecord  # Add other models as needed
 
 import json
 from django.core.serializers.json import DjangoJSONEncoder
@@ -479,7 +479,9 @@ def drloa(request):
                     "type": "radio_sub",
                     "name": f"{test.name} ({test.modality.name})"
                 })
-
+            print(f'investigations just before request from drloa views: ')
+            requested_investigations = Investigation.objects.filter(appointment=appointment)
+            print(f'requested_investigations from drloa views: {requested_investigations}')
             context = {
                 'appointment': appointment,
                 'patient': appointment.patient,
@@ -501,20 +503,22 @@ def drloa(request):
                 'labtest_subsets': labtest_subsets,
                 'radiotest_groups': radiotest_groups,
                 'radiotest_subsets': radiotest_subsets,
-                'investigations': json.dumps(investigations, cls=DjangoJSONEncoder)
+                'investigations': json.dumps(investigations, cls=DjangoJSONEncoder),
+                'requested_investigations': requested_investigations,
             }
         else:
             context = {
                 'error_message': 'No appointment ID provided',
                 'current_datetime': datetime.datetime.now(),
             }
-        
+        print("rendering with context drLOA.html")
         return render(request, "drLOA.html", context)
     except Exception as e:
         context = {
             'error_message': str(e),
             'current_datetime': datetime.datetime.now(),
         }
+        print(f'Error fetching appointment: {str(e)}')
         return render(request, "drLOA.html", context)
 
 def loa(request):
@@ -704,6 +708,34 @@ def chiefComplain(request):
         messages.error(request, f"Error: {str(e)}")
         return redirect('doctor_dashboard')
     
+@login_required
+def request_investigation(request):
+    appointment_id = request.POST.get('appointment_id')
+    investigation_id = request.POST.get('investigation_id')
+    investigation_type = request.POST.get('investigation_type')
+    print("Investigation request form submitted successfully")
+    print(f'appointment_id: {appointment_id}, investigation_id: {investigation_id}, investigation_type: {investigation_type}')
+    if appointment_id and investigation_id and investigation_type:
+        appointment = get_object_or_404(Appointment, appointment_id=appointment_id)
+        Investigation.objects.create(
+            appointment=appointment,
+            investigation_type=investigation_type,
+            investigation_id=investigation_id,
+            requested_by=request.user
+        )
+        messages.success(request, 'Investigation requested successfully')
+        return redirect(f'/drloa/?appointment_id={appointment_id}')
+    else:
+        messages.error(request, 'Failed to request investigation')
+        return redirect(f'/drloa/?appointment_id={appointment_id}')
+    
+@login_required
+def cancel_investigation(request, investigation_id):
+    investigation = get_object_or_404(Investigation, investigation_id=investigation_id)
+    investigation.status = 'canceled'
+    investigation.save()
+    messages.success(request, 'Investigation canceled successfully')
+    return redirect(f'/drloa/?appointment_id={investigation.appointment.appointment_id}')
 
 @login_required
 def currentDiagnosis(request):
