@@ -112,7 +112,15 @@
         <!-- Divider -->
         <hr class="sidebar-divider d-none d-md-block" />
       </ul>
+      <style>
+        .sidebar-position {
+          position: sticky;
+          top: 0;
+          left: 0;
+          height: 100%;
 
+        }
+      </style>
       <!-- End of Sidebar -->
 
       <!-- Content Wrapper -->
@@ -120,8 +128,10 @@
         <!-- Main Content -->
         <div id="content">
           <!-- Topbar -->
+          <!-- Topbar -->
           <nav
-            class="navbar navbar-expand navbar-light bg-white topbar static-top shadow"
+            class="navbar navbar-expand navbar-light bg-white topbar shadow"
+            style="position: fixed; top: 0; right: 0; width: calc(100% - 224px); z-index: 1030;"
           >
             <!-- Sidebar Toggle (Topbar) -->
             <button
@@ -270,7 +280,7 @@
                   aria-expanded="false"
                 >
                   <span class="mr-2 d-none d-lg-inline text-gray-600 small"
-                    >Dr. Ashish</span
+                    >Dr. {{ doctor.user.name }}</span
                   >
                   <img
                     class="img-profile rounded-circle"
@@ -310,7 +320,10 @@
               </li>
             </ul>
           </nav>
+
           <!-- End of Topbar -->
+
+
             {% block pagecontent %}
 
             {% endblock %}
