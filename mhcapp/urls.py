@@ -1,14 +1,26 @@
 from django.urls import path
 from . import views
+from django.conf import settings
+from django.conf.urls.static import static
 
 urlpatterns = [
     path("", views.login_view, name="login"),
     path("login/", views.login_view, name="login"),
 
     #path("", views.home, name="home"),
-
-    path("drloa/", views.drloa, name="drloa"),
+    path('doctor-dashboard/', views.doctor_dashboard, name='doctor_dashboard'),
+    path('drloa/', views.drloa, name='drloa'),
     path("loa/", views.loa, name="loa"),  # ← Changed name to "loa"
+    path("ongoingMedication/", views.ongoingMedication, name="ongoingMedication"),
+    path("previousDiagnosis/", views.previousDiagnosis, name="previousDiagnosis"),
+    path("chiefComplain/", views.chiefComplain, name="chiefComplain"),
+    path("currentDiagnosis/", views.currentDiagnosis, name="currentDiagnosis"),
+    path('treatmentPlan/', views.treatmentPlan, name='treatmentPlan'),
+    path('physicalExam/', views.physicalExam, name='physicalExam'),
+
+    path('request_investigation/', views.request_investigation, name='request_investigation'),
+    path('cancel_investigation/<int:investigation_id>/', views.cancel_investigation, name='cancel_investigation'),
+    path('view_investigation/<int:investigation_id>/', views.view_investigation, name='view_investigation'),
 
     path("admin_dashboard/", views.admin_dashboard, name="admin_dashboard"),
     path("newappointment/", views.newappointment, name="newappointment"),
@@ -17,17 +29,25 @@ urlpatterns = [
     path("vitalsentry/", views.vitalsentry, name="vitalsentry"),
     
     path("radiographerdash/", views.radiographerdash, name="radiographerdash"),
+    path('radnewreq/<int:investigation_id>/', views.radnewreq, name='radnewreq'),
+    path('upload_report/<int:investigation_id>/', views.upload_report, name='upload_report'),
+
+
     path("techdash/", views.techdash, name="techdash"),
-    path("radnewreq/", views.radnewreq, name="radnewreq"),
+    path('techreqdetails/<int:investigation_id>/', views.techreqdetails, name='techreqdetails'),
+    path('upload_lab_result/<int:investigation_id>/', views.upload_lab_result, name='upload_lab_result'),
+
+    
+
     path("patient_dashboard/", views.patient_dashboard, name="patient_dashboard"),
-    path('doctor-dashboard/', views.doctor_dashboard, name='doctor_dashboard'),
-    path("techreqdetails/", views.techreqdetails, name="techreqdetails"),
-    path("ongoingMedication/", views.ongoingMedication, name="ongoingMedication"),
-    path("previousDiagnosis/", views.previousDiagnosis, name="previousDiagnosis"),
-    path("chiefComplain/", views.chiefComplain, name="chiefComplain"),
-    path("currentDiagnosis/", views.currentDiagnosis, name="currentDiagnosis"),
-    path('treatmentPlan/', views.treatmentPlan, name='treatmentPlan'),
-    path('physicalExam/', views.physicalExam, name='physicalExam'),
-    path('request_investigation/', views.request_investigation, name='request_investigation'),
-    path('cancel_investigation/', views.cancel_investigation, name='cancel_investigation'),
+    
+    
+    
 ]
+
+
+# ⭐ To serve media files in development ⭐
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
+    
