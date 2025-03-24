@@ -415,3 +415,14 @@ class RadioResult(models.Model):
     investigation = models.OneToOneField(Investigation, on_delete=models.CASCADE, related_name='radio_result')
     def __str__(self):
         return f"Radio Result for Appointment no. {self.appointment.appointment_id} by {self.radiographer.name}"
+    
+class LabResult(models.Model):
+    investigation = models.ForeignKey(Investigation, on_delete=models.CASCADE, related_name='results')
+    test_name = models.CharField(max_length=200)
+    result = models.CharField(max_length=200)
+    reference = models.CharField(max_length=200)
+    entry_time = models.DateTimeField(auto_now_add=True)
+    entered_by = models.ForeignKey(User, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return f"{self.test_name} - {self.result}"
