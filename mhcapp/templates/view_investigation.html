@@ -1,0 +1,105 @@
+{% extends 'drbase.html' %}
+{% block pagecontent %}
+<div class="container-fluid" style="padding-top: 75px;">
+    <div class="row">
+        <!-- Main Content -->
+        <div class="col-9 bg-gradient-light p-4">
+            <h3 class="section-title" style="border-bottom: 1px solid #4f1915;">Investigation Result</h3>
+            <div class="row">
+                <div class="col-6">
+                    <p><strong>Investigation Name:</strong> {{ investigation.get_name }}</p>
+                    <p><strong>Status:</strong> {{ investigation.get_status_display }}</p>
+                    <p><strong>Requested At:</strong> {{ investigation.requested_at|date:"M d, Y H:i" }}</p>
+                </div>
+                <div class="col-6">
+                    <p><strong>Patient Name:</strong> {{ investigation.appointment.patient.user.name }}</p>
+                    <p><strong>Doctor Name:</strong> {{ investigation.appointment.doctor.user.name }}</p>
+                    <p><strong>Appointment ID:</strong> {{ investigation.appointment.appointment_id }}</p>
+                </div>
+            </div>
+            {% if radio_result %}
+                <div class="row mt-4">
+                    <div class="col-12">
+                        <img src="{{ radio_result.report_image.url }}" class="img-fluid" alt="Radiology Report">
+                    </div>
+                </div>
+            {% else %}
+                <p class="text-center text-danger mt-4">No report available.</p>
+            {% endif %}
+        </div>
+        <!-- Profile Card -->
+        <div class="col-3 justify-content-center bg-gradient-light" style="padding: 0">
+            <!-- Patient Profile Card -->
+            <div class="card shadow mb-4 position-fixed">
+                <div class="card-header py-3 bg-gradient-primary text-white text-center">
+                    <h6 class="m-0 font-weight-bold">Patient Profile</h6>
+                </div>
+                <div class="card-body text-center">
+                    <div class="patient-avatar mb-3">
+                        <img src="/static/resource/abid.jpg" alt="Patient Photo" class="img-profile rounded-circle shadow" style="width: 150px; height: 150px; object-fit: cover; border: 4px solid #4e73df;">
+                    </div>
+                    <h5 class="patient-name">{{ patient.user.name|default:"Mr. Unknown" }}</h5>
+                    <p class="patient-id mb-3">ID: {{ patient.user.custom_id|default:"N/A" }}</p>
+
+                    <div class="patient-details text-left">
+                        <div class="row mb-2">
+                            <div class="col-5 font-weight-bold text-primary">Age:</div>
+                            <div class="col-7">{{ patient.age|default:"N/A" }} years</div>
+                        </div>
+                        <div class="row mb-2">
+                            <div class="col-5 font-weight-bold text-primary">Gender:</div>
+                            <div class="col-7">
+                                {% if patient.gender == 'M' %}Male{% elif patient.gender == 'F' %}Female{% else %}Male{% endif %}
+                            </div>
+                        </div>
+                        <div class="row mb-2">
+                            <div class="col-5 font-weight-bold text-primary">Blood Type:</div>
+                            <div class="col-7">{{ patient.blood_type|default:"N/A" }}</div>
+                        </div>
+                        <div class="row mb-2">
+                            <div class="col-5 font-weight-bold text-primary">Contact:</div>
+                            <div class="col-7">{{ patient.user.phone|default:"N/A" }}</div>
+                        </div>
+                        <div class="row mb-2">
+                            <div class="col-5 font-weight-bold text-primary">Address:</div>
+                            <div class="col-7">{{ patient.address|default:"N/A" }}</div>
+                        </div>
+                        {% if latest_vitals.allergies %}
+                        <div class="row mb-2">
+                            <div class="col-5 font-weight-bold text-primary">Allergies:</div>
+                            <div class="col-7 text-danger">{{ latest_vitals.allergies }}</div>
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <hr>
+                    {% if latest_vitals.allergies != 'None' %}
+                    <div class="alert alert-danger mb-3 py-2">
+                        <i class="fas fa-exclamation-triangle"></i> Allergies: {{ latest_vitals.allergies }}
+                    </div>
+                    {% endif %}
+
+                    <div class="d-flex justify-content-between">
+                        <a href="#" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#medicalHistoryModal">
+                            <i class="fas fa-file-medical"></i> Medical History
+                        </a>
+                        <a href="#" class="btn btn-sm btn-info" data-bs-toggle="modal" data-bs-target="#notesModal">
+                            <i class="fas fa-notes-medical"></i> View Notes
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.position-fixed {
+    position: fixed !important;
+    top: 70px !important; /* Adjust this value if your navbar height is different */
+    right: 0px !important;
+    width: 300px !important; /* Adjust width as needed */
+    z-index: 1 !important; /* Ensure the card is on top of other elements */
+}
+</style>
+{% endblock %}
