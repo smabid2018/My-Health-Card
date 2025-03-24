@@ -404,3 +404,14 @@ class Investigation(models.Model):
             test = RadiologyTest.objects.get(id=self.investigation_id)
             return f"{test.name}"
         return "Unknown"
+    
+
+# Radio Result model
+class RadioResult(models.Model):
+    radiographer = models.ForeignKey(RadiographerProxy, on_delete=models.CASCADE)
+    appointment = models.ForeignKey(Appointment, on_delete=models.CASCADE)
+    upload_time = models.DateTimeField(auto_now_add=True)
+    report_image = models.ImageField(upload_to='radiology_reports/')
+    investigation = models.OneToOneField(Investigation, on_delete=models.CASCADE, related_name='radio_result')
+    def __str__(self):
+        return f"Radio Result for Appointment no. {self.appointment.appointment_id} by {self.radiographer.name}"
