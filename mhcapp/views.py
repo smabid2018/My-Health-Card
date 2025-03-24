@@ -7,7 +7,7 @@ from django.contrib.auth.decorators import login_required
 from django.urls import reverse
 from django.utils.text import slugify
 
-from .models import ChiefComplain, CurrentDiagnosis, Investigation, LabTest, Medication, Modality, Patient, Doctor, AdminProxy, NurseProxy, LabTechProxy, PhysicalExam, PreviousDiagnosis, RadioResult, RadiographerProxy, RadiologyTest, Subtest, TreatmentPlan, User, Appointment, VitalsRecord  # Add other models as needed
+from .models import ChiefComplain, CurrentDiagnosis, Investigation, LabResult, LabTest, Medication, Modality, Patient, Doctor, AdminProxy, NurseProxy, LabTechProxy, PhysicalExam, PreviousDiagnosis, RadioResult, RadiographerProxy, RadiologyTest, Subtest, TreatmentPlan, User, Appointment, VitalsRecord  # Add other models as needed
 
 import json
 from django.core.serializers.json import DjangoJSONEncoder
@@ -710,14 +710,16 @@ def cancel_investigation(request, investigation_id):
 def view_investigation(request, investigation_id):
     investigation = get_object_or_404(Investigation, pk=investigation_id)
     radio_result = RadioResult.objects.filter(appointment=investigation.appointment, investigation_id=investigation.id).first()
+    lab_results = LabResult.objects.filter(investigation=investigation)
     patient = investigation.appointment.patient
     doctor = investigation.appointment.doctor
-    appointment=investigation.appointment
+    appointment = investigation.appointment
     latest_vitals = VitalsRecord.objects.filter(appointment=appointment).order_by('-created_at').first()
-    
+
     return render(request, 'view_investigation.html', {
         'investigation': investigation,
         'radio_result': radio_result,
+        'lab_results': lab_results,
         'patient': patient,
         'doctor': doctor,
         'latest_vitals': latest_vitals,
@@ -907,11 +909,31 @@ def techreqdetails(request, investigation_id):
     else:
         subtests = []
 
+    # Retrieve existing LabResult entries for the investigation
+    existing_results = {result.test_name: result.result for result in LabResult.objects.filter(investigation=investigation)}
+
+    if request.method == 'POST':
+        # Delete previous LabResult entries for this investigation
+        LabResult.objects.filter(investigation=investigation).delete()
+
+        for subtest in subtests:
+            result = request.POST.get(f'result_{subtest.id}')
+            reference = f"Male: {subtest.male_normal_low} - {subtest.male_normal_high} {subtest.unit}, Female: {subtest.female_normal_low} - {subtest.female_normal_high} {subtest.unit}"
+            LabResult.objects.create(
+                investigation=investigation,
+                test_name=subtest.name,
+                result=result,
+                reference=reference,
+                entered_by=request.user
+            )
+        # Set the investigation status to completed
+        investigation.status = 'completed'
+        investigation.save()
+        return redirect('/techdash/') 
+
     context = {
         'investigation': investigation,
         'subtests': subtests,
+        'existing_results': existing_results,
     }
     return render(request, "techreqdetails.html", context)
-
-def upload_lab_result(request):
-    return render(request, "upload_result.html")
