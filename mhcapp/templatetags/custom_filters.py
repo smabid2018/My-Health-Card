@@ -12,3 +12,11 @@ def status_badge_class(status):
         return 'danger'
     else:
         return 'secondary'
+    
+@register.filter
+def get_item(dictionary, key):
+    return dictionary.get(key)
+
+@register.filter
+def split_reference(value, delimiter=", "):
+    return value.split(delimiter)
