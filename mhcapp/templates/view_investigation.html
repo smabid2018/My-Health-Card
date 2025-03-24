@@ -1,0 +1,100 @@
+{% extends 'drbase.html' %}
+{% load custom_filters %}
+
+{% block pagecontent %}
+<div class="container-fluid" style="padding-top: 75px;">
+    <div class="row">
+        <!-- Investigation Report -->
+        <div class="col-lg-9 bg-gradient-light p-4">
+            <!-- Investigation Information -->
+            <div class="accordion" id="investigationAccordion">
+                <div class="accordion-item">
+                    <h5 class="accordion-header" id="investigationHeading" style="border-bottom: 1px solid #4f1915;">
+                        <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#investigationCollapse" aria-expanded="true" aria-controls="investigationCollapse">
+                            Investigation Information
+                        </button>
+                    </h5>
+                    <div id="investigationCollapse" class="accordion-collapse collapse show" aria-labelledby="investigationHeading" data-bs-parent="#investigationAccordion">
+                        <div class="accordion-body">
+                            <div class="row">
+                                <div class="col-lg-6">
+                                    <p><strong>Investigation Name:</strong> {{ investigation.get_name }}</p>
+                                    <p><strong>Status:</strong> {{ investigation.get_status_display }}</p>
+                                    <p><strong>Requested At:</strong> {{ investigation.requested_at|date:"M d, Y H:i" }}</p>
+                                </div>
+                                <div class="col-lg-6">
+                                    <p><strong>Patient Name:</strong> {{ investigation.appointment.patient.user.name }}</p>
+                                    <p><strong>Doctor Name:</strong> {{ investigation.appointment.doctor.user.name }}</p>
+                                    <p><strong>Appointment ID:</strong> {{ investigation.appointment.appointment_id }}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {% if radio_result %}
+                <!--Radiology Report-->
+                <div class="row mt-4">
+                    <div class="col-12">
+                        <img src="{{ radio_result.report_image.url }}" class="img-fluid" alt="Radiology Report">
+                    </div>
+                </div>
+            {% elif lab_results %}
+                <!--Lab Investigation Result-->
+                <div class="card shadow mb-4 mt-4">
+                    <div class="card-header py-3">
+                        <h6 class="m-0 font-weight-bold text-primary">Investigation Results</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                                <thead>
+                                    <tr>
+                                        <th>Test Name</th>
+                                        <th>Result</th>
+                                        <th>Reference</th>
+                                        <th>Entered By</th>
+                                        <th>Entry Time</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for result in lab_results %}
+                                        <tr>
+                                            <td>{{ result.test_name }}</td>
+                                            <td>{{ result.result }}</td>
+                                            <td>
+                                                {% for line in result.reference|split_reference %}
+                                                    {{ line }}<br>
+                                                {% endfor %}
+                                            </td>
+                                            <td>{{ result.entered_by }}</td>
+                                            <td>{{ result.entry_time|date:"M d, Y H:i" }}</td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            {% else %}
+                <p class="text-center text-danger mt-4">No report available.</p>
+            {% endif %}
+        </div>
+        <!-- Profile Card -->
+        {% include 'profilecard.html' %}
+    </div>
+</div>
+
+
+
+<style>
+.position-fixed {
+    position: fixed !important;
+    top: 70px !important; /* Adjust this value if your navbar height is different */
+    right: 0px !important;
+    width: 300px !important; /* Adjust width as needed */
+    z-index: 1 !important; /* Ensure the card is on top of other elements */
+}
+</style>
+{% endblock %}

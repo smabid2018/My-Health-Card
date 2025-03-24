@@ -1,0 +1,100 @@
+test_name,subtest_name,male_normal_range_low,male_normal_range_high,female_normal_range_low,female_normal_range_high,unit
+Complete Blood Count (CBC),Hemoglobin,13.5,17.5,12.0,16.0,g/dL
+Complete Blood Count (CBC),Hematocrit,38.8,50.0,34.9,44.5,%
+Complete Blood Count (CBC),Red Blood Cells (RBC),4.5,5.9,4.1,5.1,10^6/µL
+Complete Blood Count (CBC),White Blood Cells (WBC),4.0,11.0,4.0,11.0,10^3/µL
+Complete Blood Count (CBC),Platelets,150,450,150,450,10^3/µL
+Basic Metabolic Panel (BMP),Creatinine,0.7,1.3,0.6,1.1,mg/dL
+Basic Metabolic Panel (BMP),Sodium,135,145,135,145,mEq/L
+Basic Metabolic Panel (BMP),Potassium,3.5,5.0,3.5,5.0,mEq/L
+Basic Metabolic Panel (BMP),Glucose (Fasting),70,99,70,99,mg/dL
+Lipid Panel,HDL Cholesterol,40,50,50,60,mg/dL
+Lipid Panel,LDL Cholesterol,0,100,0,100,mg/dL
+Lipid Panel,Triglycerides,0,150,0,150,mg/dL
+Liver Function Tests (LFTs),ALT,7,56,7,56,U/L
+Liver Function Tests (LFTs),AST,10,40,10,40,U/L
+Liver Function Tests (LFTs),Albumin,3.5,5.0,3.5,5.0,g/dL
+Thyroid Function Tests,TSH,0.4,4.0,0.4,4.0,mIU/L
+Thyroid Function Tests,Free T4,0.8,1.8,0.8,1.8,ng/dL
+Renal Function Tests,eGFR,90,120,90,120,mL/min/1.73m²
+Iron Studies,Ferritin,24,336,11,307,ng/mL
+Iron Studies,Serum Iron,65,175,50,170,µg/dL
+Hormones,Testosterone,300,1000,15,70,ng/dL
+Hormones,Estradiol,10,40,15,350,pg/mL
+Hormones,Progesterone,0.1,0.5,0.1,25,ng/mL
+Hormones,Prolactin,2,18,2,25,ng/mL
+Coagulation Panel,Prothrombin Time (PT),11,13.5,11,13.5,seconds
+Coagulation Panel,INR,0.8,1.2,0.8,1.2,ratio
+Diabetes Tests,Hemoglobin A1c,4.0,5.6,4.0,5.6,%
+Diabetes Tests,Insulin (Fasting),2.6,24.9,2.6,24.9,µIU/mL
+Inflammatory Markers,CRP,0.0,3.0,0.0,3.0,mg/L
+Inflammatory Markers,ESR,0,15,0,20,mm/hr
+Electrolytes,Calcium,8.6,10.2,8.6,10.2,mg/dL
+Electrolytes,Magnesium,1.7,2.2,1.7,2.2,mg/dL
+Vitamins,Vitamin D (25-OH),30,100,30,100,ng/mL
+Vitamins,Vitamin B12,200,900,200,900,pg/mL
+Cardiac Markers,Troponin I,0,0.04,0,0.04,ng/mL
+Cardiac Markers,BNP,0,100,0,100,pg/mL
+Urinalysis,pH,4.5,8.0,4.5,8.0,units
+Urinalysis,Protein,0,20,0,20,mg/dL
+Arterial Blood Gas (ABG),pCO2,35,45,35,45,mmHg
+Arterial Blood Gas (ABG),pO2,75,100,75,100,mmHg
+Miscellaneous Tests,PSA,0,4.0,N/A,N/A,ng/mL
+Miscellaneous Tests,DHEA-S,100,500,35,430,µg/dL
+Miscellaneous Tests,Cortisol (AM),6.2,19.4,6.2,19.4,µg/dL
+Miscellaneous Tests,LDH,140,280,140,280,U/L
+Miscellaneous Tests,Amylase,30,110,30,110,U/L
+Miscellaneous Tests,Lipase,13,60,13,60,U/L
+Miscellaneous Tests,Reticulocyte Count,0.5,2.0,0.5,2.0,%
+Miscellaneous Tests,Transferrin Saturation,20,50,20,50,%
+Miscellaneous Tests,Total Protein,6.0,8.3,6.0,8.3,g/dL
+Miscellaneous Tests,Globulin,2.0,3.5,2.0,3.5,g/dL
+Miscellaneous Tests,A/G Ratio,1.0,2.0,1.0,2.0,ratio
+Miscellaneous Tests,Osmolality,275,295,275,295,mOsm/kg
+Miscellaneous Tests,Ammonia,15,45,15,45,µg/dL
+Miscellaneous Tests,Lactate,0.5,2.2,0.5,2.2,mmol/L
+Miscellaneous Tests,ACTH,7.2,63.3,7.2,63.3,pg/mL
+Miscellaneous Tests,PTH,15,65,15,65,pg/mL
+Miscellaneous Tests,Anti-CCP,0,20,0,20,units
+Miscellaneous Tests,Rheumatoid Factor,0,14,0,14,IU/mL
+Miscellaneous Tests,ANA,0,1.0,0,1.0,ratio
+Miscellaneous Tests,Urine Albumin,0,30,0,30,mg/24h
+Miscellaneous Tests,Urine Calcium,100,300,100,300,mg/24h
+Miscellaneous Tests,Urine Uric Acid,250,750,250,750,mg/24h
+Miscellaneous Tests,Urine Creatinine,0.6,1.8,0.6,1.8,g/24h
+Miscellaneous Tests,Urine Sodium,40,220,40,220,mEq/24h
+Miscellaneous Tests,Urine Potassium,25,125,25,125,mEq/24h
+Miscellaneous Tests,Urine Chloride,110,250,110,250,mEq/24h
+Miscellaneous Tests,Urine Urea Nitrogen,12,20,12,20,g/24h
+Miscellaneous Tests,Urine Microalbumin,0,30,0,30,mg/24h
+Miscellaneous Tests,Urine Cortisol,10,100,10,100,µg/24h
+Miscellaneous Tests,Urine VMA,0,9,0,9,mg/24h
+Miscellaneous Tests,Urine 5-HIAA,2,8,2,8,mg/24h
+Miscellaneous Tests,Urine Catecholamines,0,100,0,100,µg/24h
+Miscellaneous Tests,Urine Metanephrines,0,1.3,0,1.3,mg/24h
+Miscellaneous Tests,Urine Porphyrins,0,150,0,150,µg/24h
+Miscellaneous Tests,Urine Osmolality,500,800,500,800,mOsm/kg
+Miscellaneous Tests,Serum Copper,70,140,70,140,µg/dL
+Miscellaneous Tests,Ceruloplasmin,20,60,20,60,mg/dL
+Miscellaneous Tests,Zinc,60,130,60,130,µg/dL
+Miscellaneous Tests,Lead,0,5,0,5,µg/dL
+Miscellaneous Tests,Mercury,0,10,0,10,µg/L
+Miscellaneous Tests,Arsenic,0,15,0,15,µg/L
+Miscellaneous Tests,Carboxyhemoglobin,0,3,0,3,%
+Miscellaneous Tests,Methhemoglobin,0,1.5,0,1.5,%
+Miscellaneous Tests,Haptoglobin,30,200,30,200,mg/dL
+Miscellaneous Tests,Angiotensin-Converting Enzyme (ACE),8,53,8,53,U/L
+Miscellaneous Tests,C-Peptide,0.9,7.1,0.9,7.1,ng/mL
+Miscellaneous Tests,Gastrin,0,100,0,100,pg/mL
+Miscellaneous Tests,Insulin-like Growth Factor 1 (IGF-1),116,358,117,329,ng/mL
+Miscellaneous Tests,Serotonin,50,200,50,200,ng/mL
+Miscellaneous Tests,Histamine,0.3,1.0,0.3,1.0,ng/mL
+Miscellaneous Tests,Chloride,96,106,96,106,mEq/L
+Miscellaneous Tests,Phosphorus,2.5,4.5,2.5,4.5,mg/dL
+Miscellaneous Tests,Total Bilirubin,0.1,1.2,0.1,1.2,mg/dL
+Miscellaneous Tests,Direct Bilirubin,0.0,0.3,0.0,0.3,mg/dL
+Miscellaneous Tests,Indirect Bilirubin,0.1,1.0,0.1,1.0,mg/dL
+Miscellaneous Tests,Total Cholesterol,0,200,0,200,mg/dL
+Miscellaneous Tests,Blood Urea Nitrogen (BUN),7,20,7,20,mg/dL
+Miscellaneous Tests,Alkaline Phosphatase,44,147,44,147,U/L
+Miscellaneous Tests,Lipase,13,60,13,60,U/L

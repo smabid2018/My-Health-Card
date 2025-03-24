@@ -6,42 +6,61 @@
     <!-- Page Heading -->
     <div class="d-sm-flex align-items-lg-start mb-4 justify-content-between">
         <h1 class="h3 mb-0 text-gray-800">Good Morning, <strong>{{labtech.name}}</strong></h1>
-
     </div>
 
     <!-- Content Row -->
     <div class="row">
-        <!-- Recent Patients -->
-        <div class="col-xl-4 col-lg-5">
+        <!-- Recent Request List -->
+        <div class="col-xl-12 col-lg-12">
             <div class="card shadow mb-4">
                 <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                    <h6 class="m-0 font-weight-bold text-primary">Recent Request list</h6>
+                    <h6 class="m-0 font-weight-bold text-primary">Recent Request List</h6>
                 </div>
                 <div class="card-body">
-                    <table class="table table-borderless">
-                        <thead>
+                    <table class="table table-hover table-bordered">
+                        <thead class="thead-light">
                             <tr>
-                                <th scope="col">PID</th>
-                                <th scope="col">Name</th>
-                                <th scope="col">Date</th>
+                                <th scope="col">Investigation ID</th>
+                                <th scope="col">Investigation Type</th>
+                                <th scope="col">Investigation Name</th>
+                                <th scope="col">Appointment ID</th>
+                                <th scope="col">Patient Name</th>
+                                <th scope="col">Referred By</th>
+                                <th scope="col">Status</th>
+                                <th scope="col">View</th>
                             </tr>
                         </thead>
                         <tbody>
-                            <tr>
-                                <th scope="row">1</th>
-                                <td>Mark</td>
-                                <td>Jan 28</td>
-                            </tr>
-                            <tr>
-                                <th scope="row">2</th>
-                                <td>Thornton</td>
-                                <td>Jan 27</td>
-                            </tr>
-                            <tr>
-                                <th scope="row">3</th>
-                                <td>Larry</td>
-                                <td>Jan 26</td>
-                            </tr>
+                            {% for investigation in investigations %}
+                                <tr>
+                                    <td>{{ investigation.id }}</td>
+                                    <td>{{ investigation.investigation_type}}</td>
+                                    <td>{{ investigation.get_name }}</td>
+                                    <td>{{ investigation.appointment.appointment_id }}</td>
+                                    <td>{{ investigation.appointment.patient.user.name }}</td>
+                                    <td>{{ investigation.appointment.doctor.user.name }}</td>
+                                    <td>
+                                        {% if investigation.status == 'requested' %}
+                                            <span class="badge badge-warning">Requested</span>
+                                        {% elif investigation.status == 'completed' %}
+                                            <span class="badge badge-success">Completed</span>
+                                        {% elif investigation.status == 'canceled' %}
+                                            <span class="badge badge-danger">Canceled</span>
+                                        {% else %}
+                                            <span class="badge badge-secondary">{{ investigation.status }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <a href="{% url 'techreqdetails' investigation.id %}" class="btn btn-info btn-sm">
+                                            <i class="fas fa-eye"></i> View
+                                        </a>
+                                    </td>
+                                </tr>
+                            {% empty %}
+                                <tr>
+                                    <td colspan="8" class="text-center">No recent requests found</td>
+                                </tr>
+                            {% endfor %}
                         </tbody>
                     </table>
                 </div>

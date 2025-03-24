@@ -230,3 +230,199 @@ class VitalsRecord(models.Model):
         if not self.bmi:
             self.bmi = self.calculate_bmi()
         super().save(*args, **kwargs)
+
+
+#  Lab Test models
+class LabTest(models.Model):
+    name = models.CharField(max_length=200, unique=True)
+    
+    def __str__(self):
+        return self.name
+
+class Subtest(models.Model):
+    test = models.ForeignKey(LabTest, on_delete=models.CASCADE, related_name='subtests')
+    name = models.CharField(max_length=200)
+    male_normal_low = models.FloatField(null=True, blank=True)
+    male_normal_high = models.FloatField(null=True, blank=True)
+    female_normal_low = models.FloatField(null=True, blank=True)
+    female_normal_high = models.FloatField(null=True, blank=True)
+    unit = models.CharField(max_length=50)
+    
+    def __str__(self):
+        return f"{self.test.name} - {self.name}"
+    
+# Radiology Test models
+class Modality(models.Model):
+    name = models.CharField(max_length=100, unique=True)
+    
+    def __str__(self):
+        return self.name
+
+class RadiologyTest(models.Model):
+    name = models.CharField(max_length=200)
+    modality = models.ForeignKey(Modality, on_delete=models.CASCADE, related_name='tests')
+    
+    class Meta:
+        unique_together = ('name', 'modality')  # Prevent duplicate entries
+    
+    def __str__(self):
+        return f"{self.modality.name} - {self.name}"
+    
+    
+# Ongoing Medication models
+class Medication(models.Model):
+    """Model to store medication information for appointments"""
+    appointment = models.ForeignKey(Appointment, on_delete=models.CASCADE, related_name='medications')
+    description = models.CharField(max_length=255)
+    created_by = models.ForeignKey(User, on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        ordering = ['-updated_at']
+        
+    def __str__(self):
+        return f"{self.description} - {self.appointment}"
+    
+# Previous Diagnosis models
+class PreviousDiagnosis(models.Model):
+    """Model to store previous diagnosis information for appointments"""
+    appointment = models.ForeignKey(Appointment, on_delete=models.CASCADE, related_name='previous_diagnoses')
+    description = models.CharField(max_length=255)
+    created_by = models.ForeignKey(User, on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        ordering = ['-updated_at']
+        
+    def __str__(self):
+        return f"{self.description} - {self.appointment}"
+    
+# Chief Complaint models
+class ChiefComplain(models.Model):
+    """Model to store chief complain information for appointments"""
+    appointment = models.ForeignKey(Appointment, on_delete=models.CASCADE, related_name='chief_complains')
+    description = models.CharField(max_length=255)
+    created_by = models.ForeignKey(User, on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        ordering = ['-updated_at']
+        
+    def __str__(self):
+        return f"{self.description} - {self.appointment}"
+    
+
+# Current diagnosis models
+class CurrentDiagnosis(models.Model):
+    """Model to store current diagnosis information for appointments"""
+    appointment = models.ForeignKey(Appointment, on_delete=models.CASCADE, related_name='current_diagnoses')
+    description = models.CharField(max_length=255)
+    created_by = models.ForeignKey(User, on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        ordering = ['-updated_at']
+        
+    def __str__(self):
+        return f"{self.description} - {self.appointment}"
+    
+# Treatment plan models:
+class TreatmentPlan(models.Model):
+    """Model to store treatment plan information for appointments"""
+    appointment = models.ForeignKey(Appointment, on_delete=models.CASCADE, related_name='treatment_plans')
+    description = models.CharField(max_length=255)
+    created_by = models.ForeignKey(User, on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        ordering = ['-updated_at']
+        
+    def __str__(self):
+        return f"{self.description} - {self.appointment}"
+    
+# physical examination models
+class PhysicalExam(models.Model):
+    appointment = models.OneToOneField(Appointment, on_delete=models.CASCADE, related_name='physical_exam')
+    general = models.TextField(null=True, blank=True)
+    cns = models.TextField(null=True, blank=True)
+    cvs = models.TextField(null=True, blank=True)
+    rs = models.TextField(null=True, blank=True)
+    abdomen = models.TextField(null=True, blank=True)
+    extremities = models.TextField(null=True, blank=True)
+    created_by = models.ForeignKey(User, on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"Physical Exam for {self.appointment}"
+    
+# Investigation models
+class Investigation(models.Model):
+    INVESTIGATION_STATUS_CHOICES = [
+        ('requested', 'Requested'),
+        ('completed', 'Completed'),
+        ('canceled', 'Canceled'),
+    ]
+
+    appointment = models.ForeignKey(Appointment, on_delete=models.CASCADE, related_name='investigations')
+    investigation_type = models.CharField(max_length=50)
+    investigation_id = models.IntegerField()
+    requested_at = models.DateTimeField(auto_now_add=True)
+    status = models.CharField(max_length=20, choices=INVESTIGATION_STATUS_CHOICES, default='requested')
+    requested_by = models.ForeignKey(User, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return f"Investigation {self.investigation_id} for {self.appointment} - {self.status}"
+
+    def get_investigation_name(self):
+        if self.investigation_type == 'lab_group':
+            return LabTest.objects.get(id=self.investigation_id).name
+        elif self.investigation_type == 'lab_sub':
+            subtest = Subtest.objects.get(id=self.investigation_id)
+            return f"{subtest.name} ({subtest.test.name})"
+        elif self.investigation_type == 'radio_group':
+            return Modality.objects.get(id=self.investigation_id).name
+        elif self.investigation_type == 'radio_sub':
+            test = RadiologyTest.objects.get(id=self.investigation_id)
+            return f"{test.name} ({test.modality.name})"
+        return "Unknown"
+    
+    def get_name(self):
+        if self.investigation_type == 'lab_group':
+            return LabTest.objects.get(id=self.investigation_id).name
+        elif self.investigation_type == 'lab_sub':
+            subtest = Subtest.objects.get(id=self.investigation_id)
+            return f"{subtest.name}"
+        elif self.investigation_type == 'radio_group':
+            return Modality.objects.get(id=self.investigation_id).name
+        elif self.investigation_type == 'radio_sub':
+            test = RadiologyTest.objects.get(id=self.investigation_id)
+            return f"{test.name}"
+        return "Unknown"
+    
+
+# Radio Result model
+class RadioResult(models.Model):
+    radiographer = models.ForeignKey(RadiographerProxy, on_delete=models.CASCADE)
+    appointment = models.ForeignKey(Appointment, on_delete=models.CASCADE)
+    upload_time = models.DateTimeField(auto_now_add=True)
+    report_image = models.ImageField(upload_to='radiology_reports/')
+    investigation = models.OneToOneField(Investigation, on_delete=models.CASCADE, related_name='radio_result')
+    def __str__(self):
+        return f"Radio Result for Appointment no. {self.appointment.appointment_id} by {self.radiographer.name}"
+    
+class LabResult(models.Model):
+    investigation = models.ForeignKey(Investigation, on_delete=models.CASCADE, related_name='results')
+    test_name = models.CharField(max_length=200)
+    result = models.CharField(max_length=200)
+    reference = models.CharField(max_length=200)
+    entry_time = models.DateTimeField(auto_now_add=True)
+    entered_by = models.ForeignKey(User, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return f"{self.test_name} - {self.result}"

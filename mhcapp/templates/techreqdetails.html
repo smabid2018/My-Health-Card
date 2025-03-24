@@ -1,4 +1,5 @@
 {% extends 'technicianleftsection.html' %}
+{% load custom_filters %}
 
 {% block pagecontent %}
 <!-- Begin Page Content -->
@@ -7,6 +8,53 @@
     <!-- Page Heading -->
     <div class="d-sm-flex align-items-lg-start mb-4 justify-content-between">
         <h1 class="h3 mb-0 text-gray-800">Request Details</h1>
+    </div>
+
+    <!-- Request Information -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Request Information</h6>
+        </div>
+        <div class="card-body">
+            <div class="row mb-3">
+                <div class="col-md-4">
+                    <label><strong>Patient Name:</strong></label>
+                    <div class="form-control bg-light">{{ investigation.appointment.patient.user.name }}</div>
+                </div>
+                <div class="col-md-4">
+                    <label><strong>Appointment ID:</strong></label>
+                    <div class="form-control bg-light">{{ investigation.appointment.appointment_id }}</div>
+                </div>
+                <div class="col-md-4">
+                    <label><strong>Requested Test:</strong></label>
+                    <div class="form-control bg-light">{{ investigation.get_name }}</div>
+                </div>
+            </div>
+            <div class="row mb-3">
+                <div class="col-md-4">
+                    <label><strong>Referred By:</strong></label>
+                    <div class="form-control bg-light">{{ investigation.appointment.doctor.user.name }}</div>
+                </div>
+                <div class="col-md-4">
+                    <label><strong>Requested At:</strong></label>
+                    <div class="form-control bg-light">{{ investigation.requested_at|date:"M d, Y H:i" }}</div>
+                </div>
+                <div class="col-md-4">
+                    <label><strong>Status:</strong></label>
+                    <div class="form-control bg-light">
+                        {% if investigation.status == 'requested' %}
+                            <span class="badge badge-warning">Requested</span>
+                        {% elif investigation.status == 'completed' %}
+                            <span class="badge badge-success">Completed</span>
+                        {% elif investigation.status == 'canceled' %}
+                            <span class="badge badge-danger">Canceled</span>
+                        {% else %}
+                            <span class="badge badge-secondary">{{ investigation.status }}</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- Content Row -->
@@ -18,49 +66,42 @@
                     <h6 class="m-0 font-weight-bold text-primary">Provide the requested report details</h6>
                 </div>
                 <div class="card-body">
-                    <form>
+                    <form method="post">
+                        {% csrf_token %}
+                        <!-- Column Headers -->
                         <div class="row mb-3">
                             <div class="col-md-4">
-                                <label><strong>Request</strong></label>
-                                <div class="form-control bg-light">CBC</div>
+                                <label><strong>Tests</strong></label>
                             </div>
                             <div class="col-md-4">
                                 <label><strong>Reports</strong></label>
-                                <input type="text" class="form-control report-input" placeholder="Enter CBC report details">
                             </div>
                             <div class="col-md-4">
                                 <label><strong>References</strong></label>
-                                <div class="form-control bg-light">ref1</div>
                             </div>
                         </div>
-
-                        <div class="row mb-3">
-                            <div class="col-md-4">
-                                <div class="form-control bg-light">CRP</div>
+                        
+                        <!-- Subtest Details -->
+                        {% for subtest in subtests %}
+                            <div class="row mb-2" style="align-items: center;">
+                                <div class="col-md-4">
+                                    <div class="form-control bg-light">{{ subtest.name }}</div>
+                                </div>
+                                <div class="col-md-4">
+                                    <input type="text" class="form-control report-input" name="result_{{ subtest.id }}" placeholder="Enter {{ subtest.name }} report details" value="{{ existing_results|get_item:subtest.name|default_if_none:'' }}">
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-control bg-light">
+                                        Male: {{ subtest.male_normal_low }} - {{ subtest.male_normal_high }} {{ subtest.unit }}<br>
+                                        Female: {{ subtest.female_normal_low }} - {{ subtest.female_normal_high }} {{ subtest.unit }}
+                                    </div>
+                                </div>
                             </div>
-                            <div class="col-md-4">
-                                <input type="text" class="form-control report-input" placeholder="Enter CRP report details">
-                            </div>
-                            <div class="col-md-4">
-                                <div class="form-control bg-light">ref2</div>
-                            </div>
-                        </div>
-
-                        <div class="row mb-3">
-                            <div class="col-md-4">
-                                <div class="form-control bg-light">S.Creatinine</div>
-                            </div>
-                            <div class="col-md-4">
-                                <input type="text" class="form-control report-input" placeholder="Enter S.Creatinine report details">
-                            </div>
-                            <div class="col-md-4">
-                                <div class="form-control bg-light">ref3</div>
-                            </div>
-                        </div>
+                        {% endfor %}
 
                         <div class="d-flex justify-content-between mt-4">
                             <button type="button" class="btn btn-secondary">Back</button>
-                            <button type="button" class="btn btn-warning">Clear</button>
+                            <button type="reset" class="btn btn-warning">Clear</button>
                             <button type="submit" class="btn btn-primary">Submit</button>
                         </div>
                     </form>
@@ -69,4 +110,10 @@
         </div>
     </div>
 </div>
+
+<style>
+    .form-control{
+        height: auto;
+    }
+</style>
 {% endblock %}
