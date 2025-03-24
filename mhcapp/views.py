@@ -5,11 +5,13 @@ from django.contrib.auth import authenticate, login
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.urls import reverse
+from django.utils.text import slugify
 
-from .models import ChiefComplain, CurrentDiagnosis, Investigation, LabTest, Medication, Modality, Patient, Doctor, AdminProxy, NurseProxy, LabTechProxy, PhysicalExam, PreviousDiagnosis, RadiographerProxy, RadiologyTest, Subtest, TreatmentPlan, User, Appointment, VitalsRecord  # Add other models as needed
+from .models import ChiefComplain, CurrentDiagnosis, Investigation, LabTest, Medication, Modality, Patient, Doctor, AdminProxy, NurseProxy, LabTechProxy, PhysicalExam, PreviousDiagnosis, RadioResult, RadiographerProxy, RadiologyTest, Subtest, TreatmentPlan, User, Appointment, VitalsRecord  # Add other models as needed
 
 import json
 from django.core.serializers.json import DjangoJSONEncoder
+from django.core.files.storage import FileSystemStorage
 
 # views logic.
 
@@ -57,15 +59,6 @@ def login_view(request):
 def home(request):
     return render(request, "drdash.html")
 
-
-
-# def admindash(request):
-#     return render(request, "admindash.html")
-
-def radnewreq(request):
-    return render(request, "radnewreq.html")
-
-
 @login_required
 def patient_dashboard(request):
     try:
@@ -83,81 +76,6 @@ def patient_dashboard(request):
     except Exception as e:
         messages.error(request, f'Error accessing dashboard: {str(e)}')
         return redirect('home')
-
-def techreqdetails(request):
-    return render(request, "techreqdetails.html")
-
-@login_required
-def doctor_dashboard(request):
-    try:
-        # Get the doctor object
-        doctor = Doctor.objects.get(user=request.user)
-        print(f'Doctor: {doctor}')
-        
-        # Count new/pending appointments for this doctor
-        new_appointments_count = Appointment.objects.filter(
-            doctor=doctor, 
-            status='pending'
-        ).count()
-        print(f'New appointments count: {new_appointments_count}')
-        
-        # Get total appointments for this doctor
-        total_appointments_count = Appointment.objects.filter(doctor=doctor).count()
-        print(f'Total appointments count: {total_appointments_count}')
-        
-        # Get recovered patients count (assuming you mark appointments as 'completed' when recovered)
-        recovered_patients_count = Appointment.objects.filter(
-            doctor=doctor, 
-            status='completed'
-        ).count()
-        print(f'Recovered patients count: {recovered_patients_count}')
-        
-        # Get referred patients count (assuming you have a 'referred' status in appointments)
-        referred_patients_count = Appointment.objects.filter(
-            doctor=doctor, 
-            status='referred'
-        ).count()
-        print(f'Referred patients count: {referred_patients_count}')
-        
-        # Get pending appointments for this doctor - renamed from new_appointments to match template
-        pending_appointments = Appointment.objects.filter(
-            doctor=doctor,
-            status='pending'
-        ).select_related('patient', 'patient__user').order_by('-appointment_date')[:10]
-        print(f'Pending appointments: {pending_appointments}')
-        
-        # Current date and time information
-        current_datetime = datetime.datetime.now()
-        formatted_datetime = current_datetime.strftime("%Y-%m-%d %H:%M:%S")
-        
-        context = {
-            # User and doctor info
-            'user': request.user,
-            'doctor': doctor,
-            
-            # Counts for dashboard cards
-            'new_appointments_count': new_appointments_count,
-            'total_appointments_count': total_appointments_count,
-            'recovered_patients_count': recovered_patients_count,
-            'referred_patients_count': referred_patients_count,
-            
-            # Appointments for table
-            'pending_appointments': pending_appointments,
-            
-            # DateTime information
-            'today': current_datetime,
-            'current_hour': current_datetime.hour,
-            
-            # URL for the "View Patient" button
-            'drloa_url': reverse('drloa'),
-        }
-        return render(request, 'drdash.html', context)
-    except Doctor.DoesNotExist:
-        messages.error(request, 'Doctor profile not found')
-        return redirect('login')
-    except Exception as e:
-        messages.error(request, f'Error accessing dashboard: {str(e)}')
-        return redirect('login')
 
 @login_required
 def admin_dashboard(request):
@@ -401,25 +319,76 @@ def vitalsentry(request):
     return render(request, "vitalsentry.html", context)
 
 @login_required
-def techdash(request):
-    labtech = LabTechProxy.objects.get(id=request.user.id)
-    context = {
-        'user': request.user,
-        'labtech': labtech,
-        # 'techreqs': TechReq.objects.all()
-    }
-    return render(request, "techdash.html", context)
-
-@login_required
-def radiographerdash(request):
-    rg = RadiographerProxy.objects.get(id=request.user.id)
-    context = {
-        'user': request.user,
-        'rg': rg,
-        # 'radreqs': RadReq.objects.all()
-    }
-    return render(request, "radiographerdash.html", context)
-
+def doctor_dashboard(request):
+    try:
+        # Get the doctor object
+        doctor = Doctor.objects.get(user=request.user)
+        print(f'Doctor: {doctor}')
+        
+        # Count new/pending appointments for this doctor
+        new_appointments_count = Appointment.objects.filter(
+            doctor=doctor, 
+            status='pending'
+        ).count()
+        print(f'New appointments count: {new_appointments_count}')
+        
+        # Get total appointments for this doctor
+        total_appointments_count = Appointment.objects.filter(doctor=doctor).count()
+        print(f'Total appointments count: {total_appointments_count}')
+        
+        # Get recovered patients count (assuming you mark appointments as 'completed' when recovered)
+        recovered_patients_count = Appointment.objects.filter(
+            doctor=doctor, 
+            status='completed'
+        ).count()
+        print(f'Recovered patients count: {recovered_patients_count}')
+        
+        # Get referred patients count (assuming you have a 'referred' status in appointments)
+        referred_patients_count = Appointment.objects.filter(
+            doctor=doctor, 
+            status='referred'
+        ).count()
+        print(f'Referred patients count: {referred_patients_count}')
+        
+        # Get pending appointments for this doctor - renamed from new_appointments to match template
+        pending_appointments = Appointment.objects.filter(
+            doctor=doctor,
+            status='pending'
+        ).select_related('patient', 'patient__user').order_by('-appointment_date')[:10]
+        print(f'Pending appointments: {pending_appointments}')
+        
+        # Current date and time information
+        current_datetime = datetime.datetime.now()
+        formatted_datetime = current_datetime.strftime("%Y-%m-%d %H:%M:%S")
+        
+        context = {
+            # User and doctor info
+            'user': request.user,
+            'doctor': doctor,
+            
+            # Counts for dashboard cards
+            'new_appointments_count': new_appointments_count,
+            'total_appointments_count': total_appointments_count,
+            'recovered_patients_count': recovered_patients_count,
+            'referred_patients_count': referred_patients_count,
+            
+            # Appointments for table
+            'pending_appointments': pending_appointments,
+            
+            # DateTime information
+            'today': current_datetime,
+            'current_hour': current_datetime.hour,
+            
+            # URL for the "View Patient" button
+            'drloa_url': reverse('drloa'),
+        }
+        return render(request, 'drdash.html', context)
+    except Doctor.DoesNotExist:
+        messages.error(request, 'Doctor profile not found')
+        return redirect('login')
+    except Exception as e:
+        messages.error(request, f'Error accessing dashboard: {str(e)}')
+        return redirect('login')
 
 # Update both views to handle the appointment_id parameter
 @login_required
@@ -731,11 +700,28 @@ def request_investigation(request):
     
 @login_required
 def cancel_investigation(request, investigation_id):
-    investigation = get_object_or_404(Investigation, investigation_id=investigation_id)
+    investigation = get_object_or_404(Investigation, pk=investigation_id)
     investigation.status = 'canceled'
     investigation.save()
-    messages.success(request, 'Investigation canceled successfully')
     return redirect(f'/drloa/?appointment_id={investigation.appointment.appointment_id}')
+
+
+@login_required
+def view_investigation(request, investigation_id):
+    investigation = get_object_or_404(Investigation, pk=investigation_id)
+    radio_result = RadioResult.objects.filter(appointment=investigation.appointment, investigation_id=investigation.id).first()
+    patient = investigation.appointment.patient
+    doctor = investigation.appointment.doctor
+    appointment=investigation.appointment
+    latest_vitals = VitalsRecord.objects.filter(appointment=appointment).order_by('-created_at').first()
+    
+    return render(request, 'view_investigation.html', {
+        'investigation': investigation,
+        'radio_result': radio_result,
+        'patient': patient,
+        'doctor': doctor,
+        'latest_vitals': latest_vitals,
+    })
 
 @login_required
 def currentDiagnosis(request):
@@ -828,3 +814,104 @@ def treatmentPlan(request):
         print(f"Error saving treatment plans: {str(e)}")
         messages.error(request, f"Error: {str(e)}")
         return redirect('doctor_dashboard')
+
+@login_required
+def radiographerdash(request):
+    rg = RadiographerProxy.objects.get(id=request.user.id)
+    investigations = Investigation.objects.filter(investigation_type='radio_sub').order_by('-requested_at')
+    print(f'investigations from radiographerdash views: {investigations}')
+    
+    context = {
+        'user': request.user,
+        'rg': rg,
+        'investigations': investigations,
+    }
+    return render(request, "radiographerdash.html", context)
+
+def radnewreq(request, investigation_id):
+    rg = RadiographerProxy.objects.get(id=request.user.id)
+    investigation = get_object_or_404(Investigation, pk=investigation_id)
+    radio_test_id = investigation.investigation_id
+    radio_test= RadiologyTest.objects.get(id=investigation.investigation_id)
+    radio_result, created = RadioResult.objects.get_or_create(investigation_id=investigation_id,appointment_id=investigation.appointment_id, defaults={'radiographer': rg})
+    print(f'radio_test_name from radnewreq: {radio_test.name}')
+    context = {
+        'investigation': investigation,
+        'radio_test_name': radio_test,
+        'rg': rg,
+        'radio_result': radio_result
+    }
+    return render(request, "radnewreq.html", context)
+
+@login_required
+def upload_report(request, investigation_id):
+    investigation = get_object_or_404(Investigation, pk=investigation_id)
+    if request.method == 'POST' and request.FILES.get('report_image'):
+        report_image = request.FILES['report_image']
+        
+        # Construct the new filename
+        patient_name = slugify(investigation.appointment.patient.user.name)
+        doctor_name = slugify(investigation.appointment.doctor.user.name)
+        appointment_id = investigation.appointment.appointment_id
+        new_filename = f"{patient_name}_{doctor_name}_{appointment_id}_{investigation_id}.{report_image.name.split('.')[-1]}"
+        
+        # Save the file with the new name
+        fs = FileSystemStorage()
+        filename = fs.save(new_filename, report_image)
+        uploaded_file_url = fs.url(filename)
+        
+        # Save the file URL or path to the RadioResult model
+        radiographer = RadiographerProxy.objects.get(id=request.user.id)
+        radio_result, created = RadioResult.objects.get_or_create(
+            radiographer=radiographer,
+            appointment=investigation.appointment,
+            investigation_id=investigation_id,
+            defaults={'report_image': filename}
+        )
+        if not created:
+            radio_result.report_image.delete(save=False)  # Delete the old image
+            radio_result.report_image = filename
+            radio_result.save()
+        
+        # Set the investigation status to completed
+        investigation.status = 'completed'
+        investigation.save()
+
+        return redirect('radiographerdash')
+    return render(request, "radnewreq.html", {'investigation': investigation})
+
+@login_required
+def techdash(request):
+    labtech = LabTechProxy.objects.get(id=request.user.id)
+    
+    # Filter investigations to include only 'lab_group' and 'lab_sub' types
+    investigations = Investigation.objects.filter(investigation_type__in=['lab_group', 'lab_sub'])
+    
+    context = {
+        'user': request.user,
+        'labtech': labtech,
+        'investigations': investigations,
+    }
+    return render(request, "techdash.html", context)
+
+
+def techreqdetails(request, investigation_id):
+    investigation = get_object_or_404(Investigation, pk=investigation_id)
+    
+    # Determine the subtests to display
+    if investigation.investigation_type in ['lab_group', 'lab_sub']:
+        if investigation.investigation_type == 'lab_group':
+            subtests = Subtest.objects.filter(test__id=investigation.investigation_id)
+        else:
+            subtests = Subtest.objects.filter(id=investigation.investigation_id)
+    else:
+        subtests = []
+
+    context = {
+        'investigation': investigation,
+        'subtests': subtests,
+    }
+    return render(request, "techreqdetails.html", context)
+
+def upload_lab_result(request):
+    return render(request, "upload_result.html")
