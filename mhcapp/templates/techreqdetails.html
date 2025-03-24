@@ -1,4 +1,5 @@
 {% extends 'technicianleftsection.html' %}
+{% load custom_filters %}
 
 {% block pagecontent %}
 <!-- Begin Page Content -->
@@ -65,7 +66,8 @@
                     <h6 class="m-0 font-weight-bold text-primary">Provide the requested report details</h6>
                 </div>
                 <div class="card-body">
-                    <form>
+                    <form method="post">
+                        {% csrf_token %}
                         <!-- Column Headers -->
                         <div class="row mb-3">
                             <div class="col-md-4">
@@ -86,7 +88,7 @@
                                     <div class="form-control bg-light">{{ subtest.name }}</div>
                                 </div>
                                 <div class="col-md-4">
-                                    <input type="text" class="form-control report-input" placeholder="Enter {{ subtest.name }} report details">
+                                    <input type="text" class="form-control report-input" name="result_{{ subtest.id }}" placeholder="Enter {{ subtest.name }} report details" value="{{ existing_results|get_item:subtest.name|default_if_none:'' }}">
                                 </div>
                                 <div class="col-md-4">
                                     <div class="form-control bg-light">
@@ -99,7 +101,7 @@
 
                         <div class="d-flex justify-content-between mt-4">
                             <button type="button" class="btn btn-secondary">Back</button>
-                            <button type="button" class="btn btn-warning">Clear</button>
+                            <button type="reset" class="btn btn-warning">Clear</button>
                             <button type="submit" class="btn btn-primary">Submit</button>
                         </div>
                     </form>
