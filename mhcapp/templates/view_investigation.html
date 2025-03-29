@@ -28,6 +28,18 @@
                                     <p><strong>Appointment ID:</strong> {{ investigation.appointment.appointment_id }}</p>
                                 </div>
                             </div>
+                            {% if investigation.get_name == "Chest X-ray (CXR)" %}
+                                <div class="row mt-3">
+                                    <div class="col-lg-12 text-center">
+                                        <button id="predictButton" class="btn btn-primary">Predict Diagnosis</button>
+                                    </div>
+                                </div>
+                                <div class="row mt-3">
+                                    <div class="col-lg-12">
+                                        <div id="predictedResult" class="alert alert-info" style="display: none;"></div>
+                                    </div>
+                                </div>
+                            {% endif %}
                         </div>
                     </div>
                 </div>
@@ -68,7 +80,7 @@
                                                     {{ line }}<br>
                                                 {% endfor %}
                                             </td>
-                                            <td>{{ result.entered_by }}</td>
+                                            <td>{{ result.entered_by.name }}</td>
                                             <td>{{ result.entry_time|date:"M d, Y H:i" }}</td>
                                         </tr>
                                     {% endfor %}
@@ -86,7 +98,35 @@
     </div>
 </div>
 
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const predictButton = document.getElementById('predictButton');
+    const predictedResult = document.getElementById('predictedResult');
 
+    predictButton.addEventListener('click', function() {
+        fetch("{% url 'predict_diagnosis' investigation.id %}")
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    predictedResult.classList.remove('alert-info');
+                    predictedResult.classList.add('alert-danger');
+                    predictedResult.textContent = data.error;
+                } else {
+                    predictedResult.classList.remove('alert-danger');
+                    predictedResult.classList.add('alert-info');
+                    predictedResult.innerHTML = 'Predicted Diagnosis:<br>' + Object.entries(data.prediction).map(([label, prob]) => `${label}: ${prob}`).join('<br>');
+                }
+                predictedResult.style.display = 'block';
+            })
+            .catch(error => {
+                predictedResult.classList.remove('alert-info');
+                predictedResult.classList.add('alert-danger');
+                predictedResult.textContent = 'An error occurred while fetching the prediction.';
+                predictedResult.style.display = 'block';
+            });
+    });
+});
+</script>
 
 <style>
 .position-fixed {
