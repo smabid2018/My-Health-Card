@@ -21,6 +21,7 @@ urlpatterns = [
     path('request_investigation/', views.request_investigation, name='request_investigation'),
     path('cancel_investigation/<int:investigation_id>/', views.cancel_investigation, name='cancel_investigation'),
     path('view_investigation/<int:investigation_id>/', views.view_investigation, name='view_investigation'),
+    path('predict_diagnosis/<int:investigation_id>/', views.predict_diagnosis, name='predict_diagnosis'),
 
     path("admin_dashboard/", views.admin_dashboard, name="admin_dashboard"),
     path("newappointment/", views.newappointment, name="newappointment"),
@@ -35,7 +36,6 @@ urlpatterns = [
 
     path("techdash/", views.techdash, name="techdash"),
     path('techreqdetails/<int:investigation_id>/', views.techreqdetails, name='techreqdetails'),
-    path('upload_lab_result/<int:investigation_id>/', views.upload_lab_result, name='upload_lab_result'),
 
     
 
