@@ -1,5 +1,5 @@
 import datetime
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect, JsonResponse
 from django.shortcuts import render, HttpResponse, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login 
 from django.contrib import messages
@@ -12,6 +12,9 @@ from .models import ChiefComplain, CurrentDiagnosis, Investigation, LabResult, L
 import json
 from django.core.serializers.json import DjangoJSONEncoder
 from django.core.files.storage import FileSystemStorage
+
+import torch
+from .predict_chest_xray import predict_chest_xray
 
 # views logic.
 
@@ -715,7 +718,7 @@ def view_investigation(request, investigation_id):
     doctor = investigation.appointment.doctor
     appointment = investigation.appointment
     latest_vitals = VitalsRecord.objects.filter(appointment=appointment).order_by('-created_at').first()
-
+    print(f'laboratory results from view_investigation views: {lab_results}')
     return render(request, 'view_investigation.html', {
         'investigation': investigation,
         'radio_result': radio_result,
@@ -724,6 +727,32 @@ def view_investigation(request, investigation_id):
         'doctor': doctor,
         'latest_vitals': latest_vitals,
     })
+
+@login_required
+def predict_diagnosis(request, investigation_id):
+    investigation = get_object_or_404(Investigation, pk=investigation_id)
+    if investigation.get_name() != 'Chest X-ray (CXR)':
+        return JsonResponse({'error': 'Invalid investigation type'}, status=400)
+
+    radio_result = RadioResult.objects.filter(appointment=investigation.appointment, investigation_id=investigation.id).first()
+    if not radio_result or not radio_result.report_image:
+        return JsonResponse({'error': 'No radiology image found'}, status=400)
+
+    # Define the paths
+    image_path = radio_result.report_image.path  # Path to the image file
+    model_path = 'mhcapp\\chest_model\\best_model.pth'  # Update this path to the trained model file
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+
+    # Run the prediction
+    prediction = predict_chest_xray(image_path, model_path, device)
+    
+    # Sort predictions by probability and get the top 5
+    top_predictions = sorted(prediction.items(), key=lambda x: x[1], reverse=True)[:5]
+    
+    # Convert probabilities to percentages
+    top_predictions = {label: f"{prob * 100:.2f}%" for label, prob in top_predictions}
+    
+    return JsonResponse({'prediction': top_predictions})
 
 @login_required
 def currentDiagnosis(request):

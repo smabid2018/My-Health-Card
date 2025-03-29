@@ -424,5 +424,7 @@ class LabResult(models.Model):
     entry_time = models.DateTimeField(auto_now_add=True)
     entered_by = models.ForeignKey(User, on_delete=models.CASCADE)
 
+    def get_tech_name(self):
+        return self.entered_by.name
     def __str__(self):
         return f"{self.test_name} - {self.result}"
