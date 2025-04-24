@@ -1,59 +1,115 @@
 {% extends 'patientleftsection.html' %}
 {% block pagecontent %}
     <div class="container-fluid py-4">
-        <h2 class="text-center mb-4">My Dashboard</h2>
+        <!-- Page Heading -->
+        <div class="d-sm-flex align-items-lg-start mb-2" >
+            <h1 class="h3 mb-0 text-gray-800">
+                Good 
+                {% now "H" as current_hour %}
+                {% if current_hour|add:"5" < 12 %}
+                    Morning
+                {% elif current_hour|add:"5" < 17 %}
+                    Afternoon
+                {% else %}
+                    Evening
+                {% endif %}, 
+                {% if isMale %}
+                Mr.  
+                {% else %}
+                Mrs.
+                {% endif %}
+                {{ patient.user.name }}
+            </h1>
+        </div>
         <div class="row">
             <!-- First Row: Appointments Table and Patient Profile -->
             <div class="col-md-8">
                 <div class="card shadow-sm rounded p-4 mb-4">
-                    <h3 class="card-title border-bottom pb-2">My Appointments</h3>
+                    <div class="card-header py-3 bg-gradient-primary text-white text-center">
+                        <h6 class="m-0 font-weight-bold">My Appointments</h6>
+                    </div>
                     <table class="table table-bordered">
                         <thead>
                             <tr>
-                                <th>Time</th>
                                 <th>Doctor</th>
-                                <th>Day</th>
                                 <th>Date</th>
+                                <th>Action</th>
                             </tr>
                         </thead>
                         <tbody>
-                            <tr>
-                                <td>10:00 AM</td>
-                                <td>Dr. Smith</td>
-                                <td>Monday</td>
-                                <td>Feb 5, 2025</td>
-                            </tr>
+                            {% if appointments %}
+                                {% for appointment in appointments %}
+                                <tr>
+                                    <td>{{ appointment.doctor.user.name }}</td>
+                                    <td>{{ appointment.appointment_date }}</td>
+                                    <td>
+                                        <a href="{% url 'view_patient_appointment' appointment.appointment_id %}" class="btn btn-sm btn-primary">View</a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            {% else %}
+                                <tr>
+                                    <td colspan="3" class="text-center">No appointments scheduled.</td>
+                                </tr>
+                            {% endif %}
                         </tbody>
                     </table>
                 </div>
             </div>
             <div class="col-md-4">
                 <div class="card shadow-sm rounded p-4 mb-4">
-                    <h3 class="card-title border-bottom pb-2">Patient Profile</h3>
-                    <div class="text-center">
-                        <img src="/static/resource/abid.jpg" alt="Profile Picture" class="rounded-circle img-fluid mb-3" style="width: 100px; height: 100px;">
+                    <div class="card shadow">
+                        <div class="card-header py-3 bg-gradient-primary text-white text-center">
+                            <h6 class="m-0 font-weight-bold">Patient Profile</h6>
+                        </div>
+                        <div class="card-body text-center">
+                            <div class="patient-avatar mb-3">
+                                <img src="/static/resource/user.png" alt="Patient Photo" class="img-profile rounded-circle shadow" style="width: 150px; height: 150px; object-fit: cover; border: 4px solid #4e73df;">
+                            </div>
+                            <h5 class="patient-name">{{ patient.user.name|default:"Mr. Unknown" }}</h5>
+                            <p class="patient-id mb-3">ID: {{ patient.user.custom_id|default:"N/A" }}</p>
+                
+                            <div class="patient-details text-left">
+                                <div class="row mb-2">
+                                    <div class="col-5 font-weight-bold text-primary">Age:</div>
+                                    <div class="col-7">{{ patient.age|default:"N/A" }} years</div>
+                                </div>
+                                <div class="row mb-2">
+                                    <div class="col-5 font-weight-bold text-primary">Gender:</div>
+                                    <div class="col-7">
+                                        {% if patient.gender == 'M' %}Male{% elif patient.gender == 'F' %}Female{% else %}Male{% endif %}
+                                    </div>
+                                </div>
+                                <div class="row mb-2">
+                                    <div class="col-5 font-weight-bold text-primary">Blood Type:</div>
+                                    <div class="col-7">{{ patient.blood_type|default:"N/A" }}</div>
+                                </div>
+                                <div class="row mb-2">
+                                    <div class="col-5 font-weight-bold text-primary">Contact:</div>
+                                    <div class="col-7">{{ patient.user.phone|default:"N/A" }}</div>
+                                </div>
+                                <div class="row mb-2">
+                                    <div class="col-5 font-weight-bold text-primary">Address:</div>
+                                    <div class="col-7">{{ patient.address|default:"N/A" }}</div>
+                                </div>
+                                {% if latest_vitals.allergies %}
+                                <div class="row mb-2">
+                                    <div class="col-5 font-weight-bold text-primary">Allergies:</div>
+                                    <div class="col-7 text-danger">{{ latest_vitals.allergies }}</div>
+                                </div>
+                                {% endif %}
+                            </div>
+                
+                            <div class="d-flex justify-content-between">
+                                <a href="#" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#medicalHistoryModal">
+                                    <i class="fas fa-file-medical"></i> Vitals History
+                                </a>
+                                <a href="#" class="btn btn-sm btn-info" data-bs-toggle="modal" data-bs-target="#notesModal">
+                                    <i class="fas fa-notes-medical"></i> Update photo
+                                </a>
+                            </div>
+                        </div>
                     </div>
-                    <ul class="list-unstyled">
-                        <li><strong>Name:</strong> {{ patient.user.name }}</li>
-                        <li><strong>Patient ID:</strong> {{ patient.user.custom_id }}</li>
-                        <li><strong>Age:</strong> {{ patient.age }}</li>
-                        <li><strong>Gender:</strong> {{ patient.get_gender_display }}</li>
-                        <li><strong>Height:</strong> {{ patient.height|default:"N/A" }}</li>
-                        <li><strong>Weight:</strong> {{ patient.weight|default:"N/A" }}</li>
-                        </ul>
-                </div>
-            </div>
-        </div>
-
-        <!-- Second Row: Allergies aligned to the right -->
-        <div class="row justify-content-end">
-            <div class="col-md-4">
-                <div class="card shadow-sm rounded p-4">
-                    <h3 class="card-title border-bottom pb-2">Allergies</h3>
-                    <ul class="list-unstyled">
-                        <li>Penicillin</li>
-                        <li>Peanuts</li>
-                    </ul>
                 </div>
             </div>
         </div>
