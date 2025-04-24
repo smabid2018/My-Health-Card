@@ -1,40 +1,78 @@
-(function($) {
-  "use strict"; // Start of use strict
-
-  // Toggle the side navigation
-  $("#sidebarToggle, #sidebarToggleTop").on('click', function(e) {
-    $("body").toggleClass("sidebar-toggled");
-    $(".sidebar").toggleClass("toggled");
-    if ($(".sidebar").hasClass("toggled")) {
-      $('.sidebar .collapse').collapse('hide');
+$(document).ready(function() {
+  "use strict";
+  
+  // Set initial state based on screen size
+  function initSidebar() {
+    if ($(window).width() < 768) {
+      // Mobile: Hide sidebar initially
+      $("#accordionSidebar").addClass("mobile-sidebar").css({
+        "left": "-250px"
+      });
+      $("#content-wrapper").css("margin-left", "0");
+    } else {
+      // Desktop: Show sidebar initially
+      $("#accordionSidebar").removeClass("mobile-sidebar").css({
+        "left": "0"
+      });
+      $("#content-wrapper").css("margin-left", "");
+    }
+  }
+  
+  // Initialize on page load
+  initSidebar();
+  
+  // Toggle sidebar when button is clicked
+  $("#sidebarToggleTop, #sidebarToggle").on("click", function(e) {
+    e.preventDefault();
+    
+    if ($(window).width() < 768) {
+      // Mobile toggle behavior
+      var sidebar = $("#accordionSidebar");
+      
+      if (sidebar.css("left") === "-250px" || sidebar.css("left") === "-250px") {
+        // Show sidebar
+        sidebar.animate({left: "0px"}, 300);
+        
+        // Add overlay if it doesn't exist
+        if ($("#sidebarOverlay").length === 0) {
+          $("body").append('<div id="sidebarOverlay"></div>');
+        }
+        $("#sidebarOverlay").fadeIn(300);
+        
+      } else {
+        // Hide sidebar
+        sidebar.animate({left: "-250px"}, 300);
+        $("#sidebarOverlay").fadeOut(300);
+      }
+    } else {
+      // Desktop toggle behavior (just toggles width)
+      $(".sidebar").toggleClass("toggled");
+      if ($(".sidebar").hasClass("toggled")) {
+        $('.sidebar .collapse').collapse('hide');
+      }
     }
   });
-
-  // Close any open menu accordions when window is resized below 768px
+  
+  // Close sidebar when clicking overlay
+  $(document).on("click", "#sidebarOverlay", function() {
+    $("#accordionSidebar").animate({left: "-250px"}, 300);
+    $(this).fadeOut(300);
+  });
+  
+  // Handle window resize
   $(window).resize(function() {
+    initSidebar();
+    
+    // Additional resize handling
     if ($(window).width() < 768) {
       $('.sidebar .collapse').collapse('hide');
-    }
-    
-    // Toggle the side navigation when window is resized below 480px
-    if ($(window).width() < 480 && !$(".sidebar").hasClass("toggled")) {
-      $("body").addClass("sidebar-toggled");
-      $(".sidebar").addClass("toggled");
-      $('.sidebar .collapse').collapse('hide');
+    } else {
+      // Reset any mobile-specific styles when returning to desktop
+      $("#sidebarOverlay").hide();
     }
   });
-
-  // Prevent the content wrapper from scrolling when the fixed side navigation hovered over
-  $('body.fixed-nav .sidebar').on('mousewheel DOMMouseScroll wheel', function(e) {
-    if ($(window).width() > 768) {
-      var e0 = e.originalEvent,
-        delta = e0.wheelDelta || -e0.detail;
-      this.scrollTop += (delta < 0 ? 1 : -1) * 30;
-      e.preventDefault();
-    }
-  });
-
-  // Scroll to top button appear
+  
+  // Scroll to top button
   $(document).on('scroll', function() {
     var scrollDistance = $(this).scrollTop();
     if (scrollDistance > 100) {
@@ -43,14 +81,13 @@
       $('.scroll-to-top').fadeOut();
     }
   });
-
+  
   // Smooth scrolling using jQuery easing
   $(document).on('click', 'a.scroll-to-top', function(e) {
     var $anchor = $(this);
-    $('html, body').stop().animate({
+    $('html, body').animate({
       scrollTop: ($($anchor.attr('href')).offset().top)
     }, 1000, 'easeInOutExpo');
     e.preventDefault();
   });
-
-})(jQuery); // End of use strict
+});
