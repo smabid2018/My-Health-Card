@@ -44,7 +44,7 @@
         <hr class="sidebar-divider my-0" />
 
         <li class="nav-item active">
-          <a class="nav-link" href="../nursedash/">
+          <a class="nav-link" href="./nursedash/">
             <i class="fas fa-fw fa-tachometer-alt"></i>
             <span>Dashboard</span></a
           >
@@ -61,7 +61,7 @@
 
         <!-- Nav Item - Logout -->
         <li class="nav-item">
-          <a class="nav-link" href="tables.html">
+          <a class="nav-link" href="{% url 'logout' %}">
             <i class="fas fa-fw fa-power-off"></i>
             <span>Logout</span></a
           >
@@ -70,7 +70,7 @@
 
       <div id="content-wrapper" class="d-flex flex-column">
         <div id="content">
-          <nav
+          <!-- <nav
             class="navbar navbar-expand navbar-light bg-white topbar static-top shadow"
           >
             <button
@@ -213,8 +213,8 @@
                 </div>
               </li>
             </ul>
-          </nav>
-
+          </nav> -->
+          <br/>
           {% block pagecontent %}
           {% endblock %}
         </div>
