@@ -1,0 +1,1061 @@
+{% extends 'patientleftsection.html' %}
+{% block pagecontent %}
+<div class="container-fluid">
+    <div class="row" style="padding-top: 5px">
+        <!-- Page header -->
+        <div class="col-12 mb-4">
+            <div class="d-flex justify-content-between align-items-center">
+                <h2>Appointment Details</h2>
+                <a href="{% url 'patient_dashboard' %}" class="btn btn-outline-primary">
+                    <i class="fas fa-arrow-left"></i> Back to Dashboard
+                </a>
+            </div>
+            <hr>
+            <div class="appointment-header bg-light p-3 rounded shadow-sm mb-4">
+                <div class="row">
+                    <div class="col-md-4">
+                        <p><strong>Doctor:</strong> Dr. {{ appointment.doctor.user.name }}</p>
+                        <p><strong>Speciality:</strong> {{ appointment.doctor.speciality }}</p>
+                    </div>
+                    <div class="col-md-4">
+                        <p><strong>Date:</strong> {{ appointment.appointment_date|date:"F d, Y" }}</p>
+                        <p><strong>Time:</strong> {{ appointment.appointment_date|date:"h:i A" }}</p>
+                    </div>
+                    <div class="col-md-4">
+                        <p><strong>Status:</strong>
+                            <span class="badge {% if appointment.status == 'pending' %}bg-warning{% elif appointment.status == 'completed' %}bg-success{% else %}bg-primary{% endif %}">
+                                {{ appointment.status|title }}
+                            </span>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Appointment content -->
+        <div class="col-12 bg-gradient-light p-2">
+            <!-- First row content -->
+            <div class="row">
+                <!-- Vitals -->
+<div class="col-lg-3 col-md-6 col-sm-12 mb-4">
+    <div class="card shadow-sm h-100">
+        <div class="card-header bg-primary text-white">
+            <h5 class="card-title mb-1"><i class="fas fa-heartbeat me-2"></i>Vital Signs</h5>
+        </div>
+        <div class="card-body pb-0">
+            {% if latest_vitals %}
+                <div class="vitals-grid">
+                    <!-- Blood Pressure -->
+                    <div class="vital-card">
+                        <i class="fas fa-heart text-danger"></i>
+                        <div class="vital-name">BP</div>
+                        <div class="vital-value">
+                            {% if latest_vitals.systolic_bp and latest_vitals.diastolic_bp %}
+                                <span title="Blood Pressure">{{ latest_vitals.systolic_bp }}/{{ latest_vitals.diastolic_bp }}</span>
+                            {% else %}
+                                <span class="text-muted">--</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <!-- Heart Rate -->
+                    <div class="vital-card">
+                        <i class="fas fa-heartbeat text-danger"></i>
+                        <div class="vital-name">Pulse</div>
+                        <div class="vital-value">
+                            {% if latest_vitals.pulse_rate %}
+                                {{ latest_vitals.pulse_rate }}
+                                <small>bpm</small>
+                            {% else %}
+                                <span class="text-muted">--</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <!-- SpO2 -->
+                    <div class="vital-card">
+                        <i class="fas fa-lungs text-info"></i>
+                        <div class="vital-name">SpO2</div>
+                        <div class="vital-value">
+                            {% if latest_vitals.spo2 %}
+                                {{ latest_vitals.spo2 }}
+                                <small>%</small>
+                            {% else %}
+                                <span class="text-muted">--</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <!-- Temperature -->
+                    <div class="vital-card">
+                        <i class="fas fa-thermometer-half text-danger"></i>
+                        <div class="vital-name">Temp</div>
+                        <div class="vital-value">
+                            {% if latest_vitals.temperature %}
+                                {{ latest_vitals.temperature }}
+                                <small>°C</small>
+                            {% else %}
+                                <span class="text-muted">--</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <!-- Respiratory Rate -->
+                    <div class="vital-card">
+                        <i class="fas fa-wind text-primary"></i>
+                        <div class="vital-name">Resp</div>
+                        <div class="vital-value">
+                            {% if latest_vitals.respiratory_rate %}
+                                {{ latest_vitals.respiratory_rate }}
+                                <small>/min</small>
+                            {% else %}
+                                <span class="text-muted">--</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <!-- Weight -->
+                    <div class="vital-card">
+                        <i class="fas fa-weight text-success"></i>
+                        <div class="vital-name">Weight</div>
+                        <div class="vital-value">
+                            {% if latest_vitals.weight %}
+                                {{ latest_vitals.weight }}
+                                <small>kg</small>
+                            {% else %}
+                                <span class="text-muted">--</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                </div>
+            {% else %}
+                <div class="alert alert-info d-flex align-items-center mb-2">
+                    <i class="fas fa-info-circle me-2"></i>
+                    <span>No vital signs recorded for this appointment.</span>
+                </div>
+                <div class="text-center pb-3">
+                    <i class="fas fa-file-medical text-muted" style="font-size: 3rem; opacity: 0.3;"></i>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Modern CSS Grid for Vitals */
+    .vitals-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 5px;
+        padding-bottom: 5px;
+    }
+    
+    /* Responsive grid adjustments */
+    @media (min-width: 576px) {
+        .vitals-grid {
+            grid-template-columns: repeat(3, 1fr);
+        }
+    }
+    
+    @media (min-width: 768px) and (max-width: 991px) {
+        .vitals-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+    
+    @media (min-width: 992px) {
+        .vitals-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+    
+    @media (min-width: 1200px) {
+        .vitals-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+    
+    /* Vital card styling */
+    .vital-card {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 10px 5px;
+        border-radius: 8px;
+        background: linear-gradient(to bottom, #f8f9fa, #ffffff);
+        border: 1px solid #e9ecef;
+        transition: all 0.2s ease;
+        text-align: center;
+        height: 90px;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .vital-card::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 0;
+        height: 100%;
+        width: 4px;
+        background-color: #4e73df;
+        opacity: 0;
+        transition: opacity 0.2s ease;
+    }
+    
+    .vital-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+        border-color: #c0d6f9;
+    }
+    
+    .vital-card:hover::before {
+        opacity: 1;
+    }
+    
+    .vital-card i {
+        font-size: 1.2rem;
+        margin-bottom: 5px;
+    }
+    
+    .vital-name {
+        font-size: 0.7rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: #6c757d;
+        font-weight: 500;
+        margin-bottom: 3px;
+    }
+    
+    .vital-value {
+        font-weight: 700;
+        font-size: 1.1rem;
+        color: #212529;
+        line-height: 1.2;
+    }
+    
+    .vital-value small {
+        font-size: 0.7rem;
+        font-weight: 400;
+        color: #6c757d;
+        margin-left: 2px;
+    }
+    
+    /* Enhanced responsiveness */
+    @media (max-width: 575px) {
+        .vital-card {
+            height: 80px;
+            padding: 8px 5px;
+        }
+        
+        .vital-card i {
+            font-size: 1rem;
+            margin-bottom: 3px;
+        }
+        
+        .vital-name {
+            font-size: 0.65rem;
+        }
+        
+        .vital-value {
+            font-size: 0.95rem;
+        }
+    }
+    
+    /* Dark mode compatibility (if needed) */
+    @media (prefers-color-scheme: dark) {
+        .vital-card {
+            background: linear-gradient(to bottom, #2c3035, #212529);
+            border-color: #343a40;
+        }
+        
+        .vital-name {
+            color: #adb5bd;
+        }
+        
+        .vital-value {
+            color: #f8f9fa;
+        }
+    }
+    
+    /* Interactive pulse animation for heart rate */
+    @keyframes pulse {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.1); }
+        100% { transform: scale(1); }
+    }
+    
+    .vital-card:hover i.fa-heartbeat {
+        animation: pulse 1s infinite;
+        color: #dc3545;
+    }
+</style>
+                
+                <!-- Ongoing Medication -->
+                <div class="col-lg-5 col-md-6 col-sm-12 mb-4">
+                    <div class="card shadow-sm h-100">
+                        <div class="card-header bg-info text-white">
+                            <h5 class="card-title mb-0">Prescribed Medications</h5>
+                        </div>
+                        <div class="card-body">
+                            {% if ongoingMedication %}
+                                <ul class="list-group">
+                                    {% for medication in ongoingMedication %}
+                                        <li class="list-group-item">{{ medication.description }}</li>
+                                    {% endfor %}
+                                </ul>
+                            {% else %}
+                                <div class="alert alert-info">No medications prescribed.</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Previous Diagnosis -->
+                <div class="col-lg-4 col-md-12 col-sm-12 mb-4">
+                    <div class="card shadow-sm h-100">
+                        <div class="card-header bg-warning text-white">
+                            <h5 class="card-title mb-0">Previous Diagnosis</h5>
+                        </div>
+                        <div class="card-body">
+                            {% if previousDiagnosis %}
+                                <ul class="list-group">
+                                    {% for diagnosis in previousDiagnosis %}
+                                        <li class="list-group-item">{{ diagnosis.description }}</li>
+                                    {% endfor %}
+                                </ul>
+                            {% else %}
+                                <div class="alert alert-info">No previous diagnoses recorded.</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Second row content -->
+            <div class="row">
+                <!-- Physical Examination -->
+                <div class="col-lg-3 col-md-6 col-sm-12 mb-4">
+                    <div class="card shadow-sm h-100 physical-exam-card">
+                        <div class="card-header bg-success text-white d-flex align-items-center">
+                            <i class="fas fa-stethoscope me-2"></i>
+                            <h5 class="card-title mb-0">Physical Exam</h5>
+                        </div>
+                        <div class="card-body px-2 py-3">
+                            {% if physical_exam %}
+                                <div class="physical-exam-items">
+                                    <!-- General -->
+                                    {% if physical_exam.general %}
+                                        <div class="exam-item mb-3">
+                                            <div class="exam-label">
+                                                <i class="fas fa-user-check text-success me-1"></i>
+                                                <span>General</span>
+                                            </div>
+                                            <div class="exam-value">
+                                                {{ physical_exam.general }}
+                                            </div>
+                                        </div>
+                                    {% endif %}
+                                    
+                                    <!-- CNS -->
+                                    {% if physical_exam.cns %}
+                                        <div class="exam-item mb-3">
+                                            <div class="exam-label">
+                                                <i class="fas fa-brain text-primary me-1"></i>
+                                                <span>CNS</span>
+                                            </div>
+                                            <div class="exam-value">
+                                                {{ physical_exam.cns }}
+                                            </div>
+                                        </div>
+                                    {% endif %}
+                                    
+                                    <!-- CVS -->
+                                    {% if physical_exam.cvs %}
+                                        <div class="exam-item mb-3">
+                                            <div class="exam-label">
+                                                <i class="fas fa-heartbeat text-danger me-1"></i>
+                                                <span>CVS</span>
+                                            </div>
+                                            <div class="exam-value">
+                                                {{ physical_exam.cvs }}
+                                            </div>
+                                        </div>
+                                    {% endif %}
+                                    
+                                    <!-- RS -->
+                                    {% if physical_exam.rs %}
+                                        <div class="exam-item mb-3">
+                                            <div class="exam-label">
+                                                <i class="fas fa-lungs text-info me-1"></i>
+                                                <span>RS</span>
+                                            </div>
+                                            <div class="exam-value">
+                                                {{ physical_exam.rs }}
+                                            </div>
+                                        </div>
+                                    {% endif %}
+                                    
+                                    <!-- Abdomen -->
+                                    {% if physical_exam.abdomen %}
+                                        <div class="exam-item mb-3">
+                                            <div class="exam-label">
+                                                <i class="fas fa-diagnoses text-warning me-1"></i>
+                                                <span>Abdomen</span>
+                                            </div>
+                                            <div class="exam-value">
+                                                {{ physical_exam.abdomen }}
+                                            </div>
+                                        </div>
+                                    {% endif %}
+                                    
+                                    <!-- Extremities -->
+                                    {% if physical_exam.extremities %}
+                                        <div class="exam-item mb-3">
+                                            <div class="exam-label">
+                                                <i class="fas fa-bone text-secondary me-1"></i>
+                                                <span>Extremities</span>
+                                            </div>
+                                            <div class="exam-value">
+                                                {{ physical_exam.extremities }}
+                                            </div>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            {% else %}
+                                <div class="alert alert-info">
+                                    <i class="fas fa-info-circle me-2"></i>
+                                    <span>No physical examination recorded.</span>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                
+                <style>
+                    /* Physical Exam Card Styling */
+                    .physical-exam-card {
+                        border-radius: 0.5rem;
+                        overflow: hidden;
+                        transition: all 0.3s ease;
+                    }
+                    
+                    .physical-exam-card:hover {
+                        box-shadow: 0 8px 15px rgba(0,0,0,0.1);
+                    }
+                    
+                    /* Exam Items Styling */
+                    .physical-exam-items {
+                        max-height: 400px;
+                        overflow-y: auto;
+                        padding-right: 5px;
+                    }
+                    
+                    .physical-exam-items::-webkit-scrollbar {
+                        width: 4px;
+                    }
+                    
+                    .physical-exam-items::-webkit-scrollbar-thumb {
+                        background-color: rgba(0,0,0,0.2);
+                        border-radius: 4px;
+                    }
+                    
+                    .exam-item {
+                        border-bottom: 1px dashed #e9ecef;
+                        padding-bottom: 8px;
+                    }
+                    
+                    .exam-item:last-child {
+                        border-bottom: none;
+                    }
+                    
+                    /* Label Styling (Attribute) */
+                    .exam-label {
+                        font-weight: 600;
+                        font-size: 0.9rem;
+                        color: #495057;
+                        background-color: #f8f9fa;
+                        padding: 0.35rem 0.6rem;
+                        border-radius: 0.25rem 0.25rem 0 0;
+                        border-left: 3px solid #198754;
+                        display: flex;
+                        align-items: center;
+                    }
+                    
+                    .exam-label i {
+                        font-size: 0.85rem;
+                        margin-right: 0.5rem;
+                    }
+                    
+                    /* Value Styling */
+                    .exam-value {
+                        background-color: #ffffff;
+                        border-left: 3px solid #198754;
+                        border-right: 1px solid #f0f0f0;
+                        border-bottom: 1px solid #f0f0f0;
+                        padding: 0.5rem 0.6rem;
+                        border-radius: 0 0 0.25rem 0.25rem;
+                        font-size: 0.875rem;
+                        line-height: 1.5;
+                        color: #343a40;
+                        margin-top: 1px; /* Tiny gap between label and value */
+                    }
+                    
+                    /* Responsive adjustments */
+                    @media (max-width: 767.98px) {
+                        .exam-label {
+                            font-size: 0.8rem;
+                            padding: 0.25rem 0.5rem;
+                        }
+                        
+                        .exam-value {
+                            font-size: 0.8rem;
+                            padding: 0.4rem 0.5rem;
+                        }
+                        
+                        .exam-item {
+                            margin-bottom: 0.5rem;
+                            padding-bottom: 0.5rem;
+                        }
+                    }
+                </style>
+                
+                <div class="col-lg-9 col-md-6 col-sm-12">
+                    <div class="row">
+                        <!-- Chief Complain -->
+                        <div class="col-lg-6 col-md-12 col-sm-12 mb-4">
+                            <div class="card shadow-sm h-100">
+                                <div class="card-header bg-danger text-white">
+                                    <h5 class="card-title mb-0">Chief Complaints</h5>
+                                </div>
+                                <div class="card-body">
+                                    {% if chiefComplains %}
+                                        <ul class="list-group">
+                                            {% for complain in chiefComplains %}
+                                                <li class="list-group-item">{{ complain.description }}</li>
+                                            {% endfor %}
+                                        </ul>
+                                    {% else %}
+                                        <div class="alert alert-info">No chief complaints recorded.</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Investigation -->
+                        <div class="col-lg-6 col-md-12 col-sm-12 mb-4">
+                            <div class="card shadow-sm h-100 investigation-card">
+                                <div class="card-header bg-secondary text-white d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <i class="fas fa-flask me-2"></i>
+                                        <h5 class="card-title mb-0 d-inline">Investigations</h5>
+                                    </div>
+                                    {% if requested_investigations %}
+                                    <span class="badge bg-light text-secondary">{{ requested_investigations|length }}</span>
+                                    {% endif %}
+                                </div>
+                                <div class="card-body p-0">
+                                    {% if requested_investigations %}
+                                        <div class="investigation-list">
+                                            {% for investigation in requested_investigations %}
+                                            <div class="investigation-item">
+                                                <div class="investigation-info">
+                                                    <div class="investigation-icon">
+                                                        {% if investigation.investigation_type == 'lab_group' or investigation.investigation_type == 'lab_sub' %}
+                                                            <i class="fas fa-vial"></i>
+                                                        {% else %}
+                                                            <i class="fas fa-x-ray"></i>
+                                                        {% endif %}
+                                                    </div>
+                                                    <div class="investigation-details">
+                                                        <h6 class="investigation-name">{{ investigation.get_name }}</h6>
+                                                        <div class="investigation-meta">
+                                                            <span class="investigation-date">{{ investigation.requested_at|date:"M d, Y" }}</span>
+                                                            •
+                                                            <span class="investigation-requester">Dr. {{ investigation.requested_by.name }}</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="investigation-status-wrapper">
+                                                    <div class="status-indicator-container">
+                                                        <span class="status-indicator status-{{ investigation.status }}"></span>
+                                                        <span class="status-text {% if investigation.status == 'completed' %}text-success{% elif investigation.status == 'canceled' %}text-danger{% else %}text-warning{% endif %}">
+                                                            {{ investigation.status|title }}
+                                                        </span>
+                                                    </div>
+                                                    <div class="investigation-action">
+                                                        {% if investigation.status == 'completed' %}
+                                                            <a href="{% url 'view_my_investigation' investigation.id %}" class="btn btn-action btn-view" title="View Results">
+                                                                <i class="fas fa-eye"></i>
+                                                            </a>
+                                                        {% elif investigation.status == 'canceled' %}
+                                                            <span class="btn btn-action btn-canceled" title="Investigation Canceled">
+                                                                <i class="fas fa-ban"></i>
+                                                            </span>
+                                                        {% else %}
+                                                            <span class="btn btn-action btn-pending" title="Results Pending">
+                                                                <i class="fas fa-clock"></i>
+                                                            </span>
+                                                        {% endif %}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            {% endfor %}
+                                        </div>
+                                    {% else %}
+                                        <div class="empty-state p-4 text-center">
+                                            <div class="empty-state-icon mb-3">
+                                                <i class="fas fa-clipboard-list"></i>
+                                            </div>
+                                            <h6 class="empty-state-title">No Investigations</h6>
+                                            <p class="empty-state-description text-muted small">
+                                                No lab tests or imaging studies have been requested for this appointment.
+                                            </p>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                
+                                {% if requested_investigations %}
+                                <div class="card-footer bg-transparent p-2">
+                                    <div class="d-flex justify-content-between align-items-center small">
+                                        <span class="text-muted">
+                                            <i class="fas fa-info-circle me-1"></i>
+                                            Click on <i class="fas fa-eye mx-1 text-info"></i> to view results
+                                        </span>
+                                        <span class="badge bg-light text-primary cursor-pointer" data-bs-toggle="collapse" data-bs-target="#statusLegend" aria-expanded="false">
+                                            <i class="fas fa-question-circle me-1"></i>
+                                            Status Legend
+                                        </span>
+                                    </div>
+                                    <div class="collapse mt-2" id="statusLegend">
+                                        <div class="d-flex justify-content-between small">
+                                            <div><span class="status-dot status-requested"></span> Requested</div>
+                                            <div><span class="status-dot status-completed"></span> Completed</div>
+                                            <div><span class="status-dot status-canceled"></span> Canceled</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <style>
+                            /* Main card styling */
+                            .investigation-card {
+                                border-radius: 0.75rem;
+                                overflow: hidden;
+                                transition: all 0.3s ease;
+                                border: none;
+                            }
+                            
+                            .investigation-card:hover {
+                                box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+                            }
+                            
+                            /* Investigation list styling */
+                            .investigation-list {
+                                max-height: 350px;
+                                overflow-y: auto;
+                            }
+                            
+                            /* Custom scrollbar for the list */
+                            .investigation-list::-webkit-scrollbar {
+                                width: 5px;
+                            }
+                            
+                            .investigation-list::-webkit-scrollbar-track {
+                                background: #f1f1f1;
+                            }
+                            
+                            .investigation-list::-webkit-scrollbar-thumb {
+                                background: #c1c1c1;
+                                border-radius: 5px;
+                            }
+                            
+                            .investigation-list::-webkit-scrollbar-thumb:hover {
+                                background: #a1a1a1;
+                            }
+                            
+                            /* Individual investigation item styling */
+                            .investigation-item {
+                                padding: 0.75rem 1rem;
+                                display: flex;
+                                justify-content: space-between;
+                                align-items: center;
+                                border-bottom: 1px solid rgba(0,0,0,0.05);
+                                transition: all 0.2s ease;
+                            }
+                            
+                            .investigation-item:hover {
+                                background-color: rgba(0,0,0,0.01);
+                            }
+                            
+                            .investigation-item:last-child {
+                                border-bottom: none;
+                            }
+                            
+                            /* Investigation info section (left side) */
+                            .investigation-info {
+                                display: flex;
+                                align-items: center;
+                                max-width: 70%;
+                            }
+                            
+                            .investigation-icon {
+                                width: 36px;
+                                height: 36px;
+                                background-color: #f8f9fa;
+                                border-radius: 50%;
+                                display: flex;
+                                justify-content: center;
+                                align-items: center;
+                                margin-right: 0.75rem;
+                                color: #6c757d;
+                                flex-shrink: 0;
+                            }
+                            
+                            .investigation-details {
+                                overflow: hidden;
+                            }
+                            
+                            .investigation-name {
+                                margin: 0;
+                                font-size: 0.875rem;
+                                font-weight: 600;
+                                color: #343a40;
+                                white-space: nowrap;
+                                overflow: hidden;
+                                text-overflow: ellipsis;
+                            }
+                            
+                            .investigation-meta {
+                                font-size: 0.75rem;
+                                color: #6c757d;
+                            }
+                            
+                            /* Status and action section (right side) */
+                            .investigation-status-wrapper {
+                                display: flex;
+                                align-items: center;
+                                gap: 1rem;
+                            }
+                            
+                            .status-indicator-container {
+                                display: flex;
+                                align-items: center;
+                                gap: 0.35rem;
+                            }
+                            
+                            .status-indicator {
+                                display: inline-block;
+                                width: 8px;
+                                height: 8px;
+                                border-radius: 50%;
+                            }
+                            
+                            .status-indicator.status-requested {
+                                background-color: #ffc107;
+                                box-shadow: 0 0 0 2px rgba(255, 193, 7, 0.2);
+                                animation: pulse-yellow 2s infinite;
+                            }
+                            
+                            .status-indicator.status-completed {
+                                background-color: #28a745;
+                                box-shadow: 0 0 0 2px rgba(40, 167, 69, 0.2);
+                            }
+                            
+                            .status-indicator.status-canceled {
+                                background-color: #dc3545;
+                                box-shadow: 0 0 0 2px rgba(220, 53, 69, 0.2);
+                            }
+                            
+                            .status-text {
+                                font-size: 0.75rem;
+                                font-weight: 500;
+                            }
+                            
+                            /* Button styling */
+                            .btn-action {
+                                width: 32px;
+                                height: 32px;
+                                padding: 0;
+                                display: flex;
+                                align-items: center;
+                                justify-content: center;
+                                border-radius: 50%;
+                                transition: all 0.2s;
+                            }
+                            
+                            .btn-view {
+                                background-color: rgba(23, 162, 184, 0.1);
+                                color: #17a2b8;
+                                border: none;
+                            }
+                            
+                            .btn-view:hover {
+                                background-color: #17a2b8;
+                                color: #fff;
+                                transform: scale(1.1);
+                            }
+                            
+                            .btn-pending {
+                                background-color: rgba(255, 193, 7, 0.1);
+                                color: #ffc107;
+                                border: none;
+                                cursor: default;
+                            }
+                            
+                            .btn-canceled {
+                                background-color: rgba(220, 53, 69, 0.1);
+                                color: #dc3545;
+                                border: none;
+                                cursor: default;
+                            }
+                            
+                            /* Empty state styling */
+                            .empty-state {
+                                padding: 2rem 1rem;
+                            }
+                            
+                            .empty-state-icon {
+                                font-size: 2.5rem;
+                                color: #e9ecef;
+                            }
+                            
+                            .empty-state-title {
+                                color: #495057;
+                                margin-bottom: 0.5rem;
+                            }
+                            
+                            .empty-state-description {
+                                max-width: 250px;
+                                margin: 0 auto;
+                            }
+                            
+                            /* Status legend */
+                            .status-dot {
+                                display: inline-block;
+                                width: 8px;
+                                height: 8px;
+                                border-radius: 50%;
+                                margin-right: 0.35rem;
+                            }
+                            
+                            .status-dot.status-requested {
+                                background-color: #ffc107;
+                            }
+                            
+                            .status-dot.status-completed {
+                                background-color: #28a745;
+                            }
+                            
+                            .status-dot.status-canceled {
+                                background-color: #dc3545;
+                            }
+                            
+                            .cursor-pointer {
+                                cursor: pointer;
+                            }
+                            
+                            /* Animation for pending status */
+                            @keyframes pulse-yellow {
+                                0% {
+                                    transform: scale(0.95);
+                                    box-shadow: 0 0 0 0 rgba(255, 193, 7, 0.5);
+                                }
+                                
+                                70% {
+                                    transform: scale(1);
+                                    box-shadow: 0 0 0 5px rgba(255, 193, 7, 0);
+                                }
+                                
+                                100% {
+                                    transform: scale(0.95);
+                                    box-shadow: 0 0 0 0 rgba(255, 193, 7, 0);
+                                }
+                            }
+                            
+                            /* Responsive adjustments */
+                            @media (max-width: 767.98px) {
+                                .investigation-item {
+                                    padding: 0.6rem 0.8rem;
+                                }
+                                
+                                .investigation-icon {
+                                    width: 32px;
+                                    height: 32px;
+                                    margin-right: 0.5rem;
+                                }
+                                
+                                .investigation-name {
+                                    font-size: 0.8rem;
+                                }
+                                
+                                .investigation-meta {
+                                    font-size: 0.7rem;
+                                }
+                                
+                                .status-text {
+                                    display: none;
+                                }
+                                
+                                .investigation-status-wrapper {
+                                    gap: 0.5rem;
+                                }
+                                
+                                .btn-action {
+                                    width: 28px;
+                                    height: 28px;
+                                }
+                            }
+                            
+                            /* For very small screens */
+                            @media (max-width: 360px) {
+                                .investigation-meta {
+                                    display: none;
+                                }
+                            }
+                        </style>
+                        
+                        <script>
+                            // Simple script to enhance interactivity
+                            document.addEventListener('DOMContentLoaded', function() {
+                                // Add hover effect to investigation items
+                                const items = document.querySelectorAll('.investigation-item');
+                                items.forEach(item => {
+                                    item.addEventListener('mouseover', function() {
+                                        const icon = this.querySelector('.investigation-icon i');
+                                        icon.style.transform = 'scale(1.2)';
+                                        icon.style.transition = 'transform 0.2s';
+                                    });
+                                    
+                                    item.addEventListener('mouseout', function() {
+                                        const icon = this.querySelector('.investigation-icon i');
+                                        icon.style.transform = 'scale(1)';
+                                    });
+                                });
+                            });
+                        </script>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Third row content -->
+            <div class="row">
+                <!-- Diagnosis -->
+                <div class="col-lg-4 col-md-6 col-sm-12 mb-4">
+                    <div class="card shadow-sm h-100">
+                        <div class="card-header bg-primary text-white">
+                            <h5 class="card-title mb-0">Current Diagnosis</h5>
+                        </div>
+                        <div class="card-body">
+                            {% if currentDiagnosis %}
+                                <ul class="list-group">
+                                    {% for diagnosis in currentDiagnosis %}
+                                        <li class="list-group-item">{{ diagnosis.description }}</li>
+                                    {% endfor %}
+                                </ul>
+                            {% else %}
+                                <div class="alert alert-info">No current diagnosis recorded.</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Treatment Plan -->
+                <div class="col-lg-8 col-md-6 col-sm-12 mb-4">
+                    <div class="card shadow-sm h-100">
+                        <div class="card-header bg-success text-white">
+                            <h5 class="card-title mb-0">Treatment Plan</h5>
+                        </div>
+                        <div class="card-body">
+                            {% if treatmentPlans %}
+                                <ul class="list-group">
+                                    {% for plan in treatmentPlans %}
+                                        <li class="list-group-item">{{ plan.description }}</li>
+                                    {% endfor %}
+                                </ul>
+                            {% else %}
+                                <div class="alert alert-info">No treatment plan recorded.</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* General card styling */
+    .card {
+        transition: all 0.3s ease;
+        border-radius: 8px;
+        border: none;
+    }
+    
+    .card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+    }
+    
+    .card-header {
+        border-radius: 8px 8px 0 0;
+    }
+    
+    /* Vital signs styling */
+    .vital-card {
+        padding: 10px;
+        border-radius: 6px;
+        background-color: #f8f9fa;
+        border: 1px solid #dee2e6;
+        margin-bottom: 10px;
+    }
+    
+    .vital-card h6 {
+        font-size: 0.8rem;
+        margin-bottom: 5px;
+        color: #6c757d;
+    }
+    
+    .display-value {
+        font-size: 1.1rem;
+        font-weight: bold;
+        color: #343a40;
+    }
+    
+    /* Responsive adjustments */
+    @media (max-width: 767.98px) {
+        .card {
+            margin-bottom: 15px;
+        }
+        
+        .vital-card {
+            margin-bottom: 5px;
+        }
+        
+        .card-header h5 {
+            font-size: 1rem;
+        }
+        
+        .btn-sm {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.75rem;
+        }
+    }
+    
+    /* Make tables responsive */
+    .table-responsive {
+        max-height: 200px;
+        overflow-y: auto;
+    }
+    
+    /* Appointment header */
+    .appointment-header {
+        background-color: #f8f9fa;
+        border-left: 4px solid #4e73df;
+    }
+</style>
+{% endblock %}
