@@ -1,0 +1,402 @@
+{% extends 'patientleftsection.html' %}
+{% load custom_filters %}
+
+{% block pagecontent %}
+<div class="container-fluid investigation-container">
+    <div class="row">
+        <!-- Investigation Report - now full width -->
+        <div class="col-12">
+            <!-- Header with back button and title -->
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <a href="javascript:history.back()" class="btn btn-outline-primary btn-sm">
+                    <i class="fas fa-arrow-left"></i> Back
+                </a>
+                <h4 class="mb-0 text-center flex-grow-1">Investigation Details</h4>
+                <div style="width: 40px;"></div> <!-- Spacer for alignment -->
+            </div>
+            
+            <!-- Investigation Information Card -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="fas {% if radio_result %}fa-x-ray{% else %}fa-vial{% endif %} me-2"></i>
+                        {{ investigation.get_name }}
+                    </h5>
+                    <span class="badge bg-light text-primary">{{ investigation.get_status_display }}</span>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <div class="info-group">
+                                <label class="info-label">Patient</label>
+                                <div class="info-value">{{ investigation.appointment.patient.user.name }}</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="info-group">
+                                <label class="info-label">Doctor</label>
+                                <div class="info-value">{{ investigation.appointment.doctor.user.name }}</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="info-group">
+                                <label class="info-label">Requested At</label>
+                                <div class="info-value">{{ investigation.requested_at|date:"M d, Y H:i" }}</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="info-group">
+                                <label class="info-label">Appointment ID</label>
+                                <div class="info-value">{{ investigation.appointment.appointment_id }}</div>
+                            </div>
+                        </div>
+                        
+                        {% if investigation.get_name == "Chest X-ray (CXR)" %}
+                        <div class="col-12 mt-3">
+                            <div class="d-flex flex-column">
+                                <button id="predictButton" class="btn btn-primary mb-2">
+                                    <i class="fas fa-brain me-2"></i>AI Prediction
+                                </button>
+                                <div id="predictedResult" class="alert alert-info" style="display: none;">
+                                    <div class="prediction-loading">
+                                        <div class="spinner-border text-primary spinner-border-sm me-2" role="status">
+                                            <span class="visually-hidden">Loading...</span>
+                                        </div>
+                                        <span>Analyzing X-ray...</span>
+                                    </div>
+                                    <div class="prediction-results" style="display: none;"></div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Results Section -->
+            <div class="results-section">
+                <h5 class="result-heading mb-3">
+                    {% if radio_result %}
+                        <i class="fas fa-file-medical me-2"></i>Radiology Report
+                    {% elif lab_results %}
+                        <i class="fas fa-flask me-2"></i>Laboratory Results
+                    {% else %}
+                        <i class="fas fa-exclamation-circle me-2"></i>No Report Available
+                    {% endif %}
+                </h5>
+                
+                {% if radio_result %}
+                    <!-- Radiology Report -->
+<div class="card shadow-sm mb-4">
+    <div class="card-body p-0">
+        <div class="radiology-image-container" id="imageContainer">
+            <div class="image-wrapper" id="imageWrapper">
+                <img src="{{ radio_result.report_image.url }}" class="radiology-image" id="radiologyImage" alt="Radiology Report">
+            </div>
+            <div class="image-controls">
+                <button class="btn btn-sm btn-light zoom-in" title="Zoom In"><i class="fas fa-search-plus"></i></button>
+                <button class="btn btn-sm btn-light zoom-out" title="Zoom Out"><i class="fas fa-search-minus"></i></button>
+                <button class="btn btn-sm btn-light reset-zoom" title="Reset View"><i class="fas fa-sync-alt"></i></button>
+            </div>
+        </div>
+    </div>
+</div>
+                {% elif lab_results %}
+                    <!-- Lab Investigation Result -->
+                    <div class="card shadow-sm mb-4">
+                        <div class="card-body p-0">
+                            <div class="table-responsive">
+                                <table class="table table-hover mb-0">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>Test</th>
+                                            <th>Result</th>
+                                            <th class="d-none d-md-table-cell">Reference</th>
+                                            <th class="d-none d-lg-table-cell">Entered By</th>
+                                            <th class="d-none d-lg-table-cell">Time</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for result in lab_results %}
+                                            <tr class="expandable-row" data-bs-toggle="collapse" data-bs-target="#detail-{{ forloop.counter }}" aria-expanded="false">
+                                                <td>{{ result.test_name }}</td>
+                                                <td>
+                                                    <span class="result-value">{{ result.result }}</span>
+                                                </td>
+                                                <td class="d-none d-md-table-cell">
+                                                    {% for line in result.reference|split_reference %}
+                                                        {{ line }}<br>
+                                                    {% endfor %}
+                                                </td>
+                                                <td class="d-none d-lg-table-cell">{{ result.entered_by.name }}</td>
+                                                <td class="d-none d-lg-table-cell">{{ result.entry_time|date:"M d, Y H:i" }}</td>
+                                            </tr>
+                                            <!-- Mobile View Details Row -->
+                                            <tr class="d-lg-none">
+                                                <td colspan="2" class="p-0">
+                                                    <div class="collapse" id="detail-{{ forloop.counter }}">
+                                                        <div class="p-3 bg-light">
+                                                            <div class="mb-2">
+                                                                <strong>Reference:</strong><br>
+                                                                {% for line in result.reference|split_reference %}
+                                                                    {{ line }}<br>
+                                                                {% endfor %}
+                                                            </div>
+                                                            <div class="mb-1">
+                                                                <strong>Entered By:</strong> {{ result.entered_by.name }}
+                                                            </div>
+                                                            <div>
+                                                                <strong>Entry Time:</strong> {{ result.entry_time|date:"M d, Y H:i" }}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                                {% if lab_results %}
+                                <div class="d-block d-lg-none text-center p-2 bg-light border-top">
+                                    <small class="text-muted"><i class="fas fa-info-circle me-1"></i> Tap on a row to view more details</small>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                {% else %}
+                    <div class="alert alert-warning text-center">
+                        <i class="fas fa-exclamation-circle me-2"></i>
+                        No report is available for this investigation yet.
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Radiology image styling */
+    .radiology-image-container {
+        position: relative;
+        overflow: hidden;
+        background-color: #f8f9fa;
+        height: 70vh;
+        max-height: 600px;
+        min-height: 300px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        cursor: grab;
+    }
+    
+    .radiology-image-container:active {
+        cursor: grabbing;
+    }
+    
+    .image-wrapper {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        overflow: hidden;
+    }
+    
+    .radiology-image {
+        max-width: 100%;
+        max-height: 100%;
+        object-fit: contain;
+        user-select: none;
+        transform-origin: center center;
+    }
+    
+    .image-controls {
+        position: absolute;
+        bottom: 10px;
+        right: 10px;
+        display: flex;
+        gap: 5px;
+        opacity: 0.7;
+        transition: opacity 0.3s ease;
+        z-index: 10;
+    }
+    
+    .image-controls:hover {
+        opacity: 1;
+    }
+    
+    .image-controls .btn {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: rgba(255, 255, 255, 0.9);
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    </style>
+    
+    <script>
+    // Radiology image zoom and pan functionality
+    document.addEventListener('DOMContentLoaded', function() {
+        const radiologyImage = document.getElementById('radiologyImage');
+        if (!radiologyImage) return;
+        
+        const imageContainer = document.getElementById('imageContainer');
+        const imageWrapper = document.getElementById('imageWrapper');
+        const zoomInBtn = document.querySelector('.zoom-in');
+        const zoomOutBtn = document.querySelector('.zoom-out');
+        const resetZoomBtn = document.querySelector('.reset-zoom');
+        
+        let scale = 1;
+        let isPanning = false;
+        let startX, startY, startPanX = 0, startPanY = 0;
+        let currentPanX = 0, currentPanY = 0;
+        
+        // Apply transform to the image
+        function updateTransform() {
+            radiologyImage.style.transform = `translate(${currentPanX}px, ${currentPanY}px) scale(${scale})`;
+        }
+        
+        // Zoom functions
+        zoomInBtn.addEventListener('click', function() {
+            scale = Math.min(scale + 0.2, 4); // Limit max zoom to 4x
+            updateTransform();
+        });
+        
+        zoomOutBtn.addEventListener('click', function() {
+            scale = Math.max(scale - 0.2, 1); // Limit min zoom to 1x
+            if (scale === 1) {
+                // Reset panning when fully zoomed out
+                currentPanX = 0;
+                currentPanY = 0;
+            }
+            updateTransform();
+        });
+        
+        resetZoomBtn.addEventListener('click', function() {
+            scale = 1;
+            currentPanX = 0;
+            currentPanY = 0;
+            updateTransform();
+        });
+        
+        // Pan functions (only active when zoomed in)
+        imageContainer.addEventListener('mousedown', function(e) {
+            if (scale > 1) {
+                isPanning = true;
+                startX = e.clientX;
+                startY = e.clientY;
+                startPanX = currentPanX;
+                startPanY = currentPanY;
+                this.style.cursor = 'grabbing';
+                e.preventDefault();
+            }
+        });
+        
+        window.addEventListener('mousemove', function(e) {
+            if (!isPanning) return;
+            
+            // Calculate how much we've moved
+            const deltaX = e.clientX - startX;
+            const deltaY = e.clientY - startY;
+            
+            // Update the current pan position
+            currentPanX = startPanX + deltaX;
+            currentPanY = startPanY + deltaY;
+            
+            // Apply the transform
+            updateTransform();
+        });
+        
+        window.addEventListener('mouseup', function() {
+            isPanning = false;
+            imageContainer.style.cursor = 'grab';
+        });
+        
+        // Touch support for mobile devices
+        imageContainer.addEventListener('touchstart', function(e) {
+            if (scale > 1 && e.touches.length === 1) {
+                isPanning = true;
+                startX = e.touches[0].clientX;
+                startY = e.touches[0].clientY;
+                startPanX = currentPanX;
+                startPanY = currentPanY;
+                e.preventDefault();
+            }
+        });
+        
+        imageContainer.addEventListener('touchmove', function(e) {
+            if (!isPanning) return;
+            
+            // Calculate how much we've moved
+            const deltaX = e.touches[0].clientX - startX;
+            const deltaY = e.touches[0].clientY - startY;
+            
+            // Update the current pan position
+            currentPanX = startPanX + deltaX;
+            currentPanY = startPanY + deltaY;
+            
+            // Apply the transform
+            updateTransform();
+            e.preventDefault();
+        });
+        
+        imageContainer.addEventListener('touchend', function() {
+            isPanning = false;
+        });
+        
+        // Handle wheel/scroll events for zooming
+        imageContainer.addEventListener('wheel', function(e) {
+            e.preventDefault();
+            
+            // Determine zoom direction
+            if (e.deltaY < 0) {
+                // Zoom in
+                scale = Math.min(scale + 0.1, 4);
+            } else {
+                // Zoom out
+                scale = Math.max(scale - 0.1, 1);
+                if (scale === 1) {
+                    // Reset panning when fully zoomed out
+                    currentPanX = 0;
+                    currentPanY = 0;
+                }
+            }
+            
+            updateTransform();
+        });
+    });
+    </script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const predictButton = document.getElementById('predictButton');
+        const predictedResult = document.getElementById('predictedResult');
+    
+        predictButton.addEventListener('click', function() {
+            fetch("{% url 'predict_diagnosis' investigation.id %}")
+                .then(response => response.json())
+                .then(data => {
+                    if (data.error) {
+                        predictedResult.classList.remove('alert-info');
+                        predictedResult.classList.add('alert-danger');
+                        predictedResult.textContent = data.error;
+                    } else {
+                        predictedResult.classList.remove('alert-danger');
+                        predictedResult.classList.add('alert-info');
+                        predictedResult.innerHTML = 'Predicted Diagnosis:<br>' + Object.entries(data.prediction).map(([label, prob]) => `${label}: ${prob}`).join('<br>');
+                    }
+                    predictedResult.style.display = 'block';
+                })
+                .catch(error => {
+                    predictedResult.classList.remove('alert-info');
+                    predictedResult.classList.add('alert-danger');
+                    predictedResult.textContent = 'An error occurred while fetching the prediction.';
+                    predictedResult.style.display = 'block';
+                });
+        });
+    });
+    </script>
+{% endblock %}
