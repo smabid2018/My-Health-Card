@@ -1,7 +1,7 @@
 import datetime
 from django.http import HttpResponseRedirect, JsonResponse
 from django.shortcuts import render, HttpResponse, redirect, get_object_or_404
-from django.contrib.auth import authenticate, login 
+from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.urls import reverse
@@ -59,26 +59,12 @@ def login_view(request):
     return render(request, 'login.html')
 
 
+def logout_view(request):
+    logout(request)
+    return redirect('login')
+
 def home(request):
     return render(request, "drdash.html")
-
-@login_required
-def patient_dashboard(request):
-    try:
-        patient = Patient.objects.get(user=request.user)
-        context = {
-            'user': request.user,
-            'patient': patient,
-            # 'appointments': patient.appointment_set.all(),
-            # 'medical_records': patient.medicalrecord_set.all()
-        }
-        return render(request, 'patientdash.html', context)
-    except Patient.DoesNotExist:
-        messages.error(request, 'Patient profile not found')
-        return redirect('login')
-    except Exception as e:
-        messages.error(request, f'Error accessing dashboard: {str(e)}')
-        return redirect('home')
 
 @login_required
 def admin_dashboard(request):
@@ -356,7 +342,7 @@ def doctor_dashboard(request):
         # Get pending appointments for this doctor - renamed from new_appointments to match template
         pending_appointments = Appointment.objects.filter(
             doctor=doctor,
-            status='pending'
+            # status='pending'
         ).select_related('patient', 'patient__user').order_by('-appointment_date')[:10]
         print(f'Pending appointments: {pending_appointments}')
         
@@ -541,6 +527,10 @@ def ongoingMedication(request):
                     description=med.strip(),
                     created_by=request.user
                 )
+        # Save the medication to the database
+        appointment.status = 'in_progress'
+        appointment.save()
+
         print(f'Medications saved for appointment ID: {appointment_id}')
         messages.success(request, 'Medications have been updated successfully.')
 
@@ -589,6 +579,10 @@ def previousDiagnosis(request):
                     description=diag.strip(),
                     created_by=request.user
                 )
+
+        appointment.status = 'in_progress'
+        appointment.save()
+
         print(f'Diagnoses saved for appointment ID: {appointment_id}')
         messages.success(request, 'Previous diagnoses have been updated successfully.')
 
@@ -620,6 +614,10 @@ def physicalExam(request):
             physical_exam.extremities = request.POST.get('extremities')
             physical_exam.save()
             print('Physical exam saved successfully')
+            
+            # Save the appointment status as 'in_progress' if not already set
+            appointment.status = 'physical examined'
+            appointment.save()
             messages.success(request, 'Physical exam saved successfully')
             return redirect(f'/drloa/?appointment_id={appointment_id}')
         
@@ -669,6 +667,10 @@ def chiefComplain(request):
                     created_by=request.user
                 )
         print(f'Chief complains saved for appointment ID: {appointment_id}')
+        # Save the appointment status as 'in_progress' if not already set
+        appointment.status = 'in_progress'
+        appointment.save()
+        
         messages.success(request, 'Chief complains have been updated successfully.')
 
         # Generate the URL with the query parameter
@@ -696,6 +698,11 @@ def request_investigation(request):
             requested_by=request.user
         )
         messages.success(request, 'Investigation requested successfully')
+        
+        # Save the appointment status as 'in_progress' if not already set
+        appointment.status = 'requested'
+        appointment.save()
+
         return redirect(f'/drloa/?appointment_id={appointment_id}')
     else:
         messages.error(request, 'Failed to request investigation')
@@ -789,6 +796,11 @@ def currentDiagnosis(request):
                     created_by=request.user
                 )
         print(f'Diagnoses saved for appointment ID: {appointment_id}')
+
+        # Save the appointment status as 'in_progress' if not already set
+        appointment.status = 'diagnosed'
+        appointment.save()
+
         messages.success(request, 'Current diagnoses have been updated successfully.')
 
         # Generate the URL with the query parameter
@@ -834,6 +846,11 @@ def treatmentPlan(request):
                     description=plan.strip(),
                     created_by=request.user
                 )
+        # Save the treatment plan to the database
+        appointment.status = 'Prescribed'
+        appointment.save()
+
+
         print(f'Treatment plans saved for appointment ID: {appointment_id}')
         messages.success(request, 'Treatment plans have been updated successfully.')
 
@@ -966,3 +983,133 @@ def techreqdetails(request, investigation_id):
         'existing_results': existing_results,
     }
     return render(request, "techreqdetails.html", context)
+
+
+@login_required
+def patient_dashboard(request):
+    try:
+        # Get the patient object associated with the logged-in user
+        patient = Patient.objects.get(user=request.user)
+        print(f'patient gender is {patient.gender} from patient_dashboard views')
+        isMale = True if patient.gender=='M' else False
+        # Get all appointments for this patient, ordered by latest first
+        appointments = Appointment.objects.filter(patient=patient).order_by('-appointment_date')
+        
+        # Get the latest vitals record for this patient
+        latest_vitals = VitalsRecord.objects.filter(
+            appointment__patient=patient
+        ).order_by('-created_at').first()
+        
+        # Calculate current hour for greeting (Django templates can handle time conditionals,
+        # but we're providing the hour here for robustness)
+        current_datetime = datetime.datetime.now()
+        current_hour = current_datetime.hour
+        
+        # Prepare context for template rendering
+        context = {
+            'user': request.user,
+            'patient': patient,
+            'appointments': appointments,
+            'latest_vitals': latest_vitals,
+            'today': current_datetime,
+            'current_hour': current_hour,
+            'isMale': isMale,
+        }
+        
+        return render(request, 'patientdash.html', context)
+        
+    except Patient.DoesNotExist:
+        messages.error(request, 'Patient profile not found')
+        return redirect('login')
+    except Exception as e:
+        messages.error(request, f'Error accessing dashboard: {str(e)}')
+        return redirect('login')
+    
+@login_required
+def view_patient_appointment(request, appointment_id):
+    try:
+        # Get the appointment with the specified ID
+        appointment = get_object_or_404(Appointment, appointment_id=appointment_id)
+        
+        # Check if the logged-in user is the patient for this appointment (security check)
+        if appointment.patient.user != request.user:
+            messages.error(request, "You don't have permission to view this appointment")
+            return redirect('patient_dashboard')
+        
+        # Get vital signs for this appointment
+        latest_vitals = VitalsRecord.objects.filter(appointment=appointment).order_by('-created_at').first()
+        
+        # Get all medical data for this appointment
+        ongoingMedication = Medication.objects.filter(appointment=appointment)
+        previousDiagnosis = PreviousDiagnosis.objects.filter(appointment=appointment)
+        physical_exam = PhysicalExam.objects.filter(appointment=appointment).first()
+        chiefComplains = ChiefComplain.objects.filter(appointment=appointment)
+        currentDiagnosis = CurrentDiagnosis.objects.filter(appointment=appointment)
+        treatmentPlans = TreatmentPlan.objects.filter(appointment=appointment)
+        
+        # Get investigations for this appointment
+        requested_investigations = Investigation.objects.filter(appointment=appointment)
+        
+        # Create a list of completed investigations with their results
+        completed_investigations = []
+        for investigation in requested_investigations:
+            if investigation.status == 'completed':
+                if investigation.investigation_type in ['lab_group', 'lab_sub']:
+                    # Get lab results
+                    lab_results = LabResult.objects.filter(investigation=investigation)
+                    if lab_results.exists():
+                        completed_investigations.append({
+                            'investigation': investigation,
+                            'results': lab_results,
+                            'type': 'lab'
+                        })
+                elif investigation.investigation_type in ['radio_group', 'radio_sub']:
+                    # Get radiology results
+                    radio_result = RadioResult.objects.filter(investigation=investigation).first()
+                    if radio_result:
+                        completed_investigations.append({
+                            'investigation': investigation,
+                            'result': radio_result,
+                            'type': 'radiology'
+                        })
+        
+        context = {
+            'appointment': appointment,
+            'patient': appointment.patient,
+            'doctor': appointment.doctor,
+            'current_datetime': datetime.datetime.now(),
+            'latest_vitals': latest_vitals,
+            'ongoingMedication': ongoingMedication,
+            'previousDiagnosis': previousDiagnosis,
+            'physical_exam': physical_exam,
+            'chiefComplains': chiefComplains,
+            'currentDiagnosis': currentDiagnosis,
+            'treatmentPlans': treatmentPlans,
+            'requested_investigations': requested_investigations,
+            'completed_investigations': completed_investigations,
+        }
+        
+        return render(request, 'myappointmentdetails.html', context)
+    
+    except Exception as e:
+        messages.error(request, f"Error accessing appointment details: {str(e)}")
+        return redirect('patient_dashboard')
+    
+@login_required
+def view_my_investigation(request, investigation_id):
+    investigation = get_object_or_404(Investigation, pk=investigation_id)
+    radio_result = RadioResult.objects.filter(appointment=investigation.appointment, investigation_id=investigation.id).first()
+    lab_results = LabResult.objects.filter(investigation=investigation)
+    patient = investigation.appointment.patient
+    doctor = investigation.appointment.doctor
+    appointment = investigation.appointment
+    latest_vitals = VitalsRecord.objects.filter(appointment=appointment).order_by('-created_at').first()
+    print(f'laboratory results from view_investigation views: {lab_results}')
+    return render(request, 'viewmyinvestigation.html', {
+        'investigation': investigation,
+        'radio_result': radio_result,
+        'lab_results': lab_results,
+        'patient': patient,
+        'doctor': doctor,
+        'latest_vitals': latest_vitals,
+    })
