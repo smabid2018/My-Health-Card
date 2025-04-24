@@ -12,7 +12,7 @@
 
     <title>Doctor - Dashboard</title>
 
-{#    <!-- Custom fonts for base design-->#}
+    <!-- Custom fonts for base design-->
     <link
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
       rel="stylesheet"
@@ -25,7 +25,7 @@
 
     <!-- Custom styles for this base design-->
     <link href="/static/css/bootstrap.min.css" rel="stylesheet" />
-      <link href="/static/css/custom.css" rel="stylesheet" />
+    <link href="/static/css/custom.css" rel="stylesheet" />
   </head>
 
   <body>
@@ -39,7 +39,7 @@
         <!-- Sidebar -->
         <a
           class="sidebar-brand d-flex align-items-center justify-content-center"
-          href="../doctor-dashboard/"
+          href="{% url 'doctor_dashboard' %}"
         >
           <div class="sidebar-brand-text mx-3">
             <img src="/static/resource/logo.png" alt="" style="max-width: 30vh" />
@@ -51,7 +51,7 @@
 
         <!-- Nav Item - Dashboard -->
         <li class="nav-item active">
-          <a class="nav-link" href="../doctor-dashboard/">
+          <a class="nav-link" href="{% url 'doctor_dashboard' %}">
             <i class="fas fa-fw fa-tachometer-alt"></i>
             <span>Dashboard</span></a
           >
@@ -60,10 +60,10 @@
         <!-- Divider -->
         <hr class="sidebar-divider" />
 
-        <!-- Heading -->
+        <!-- Heading
         <div class="sidebar-heading">Interface</div>
 
-        <!-- Nav Item - Pages Collapse Menu -->
+        Nav Item - Pages Collapse Menu
         <li class="nav-item">
           <a
             class="nav-link collapsed"
@@ -90,20 +90,20 @@
           </div>
         </li>
 
-        <!-- Divider -->
+        Divider
         <hr class="sidebar-divider" />
 
-        <!-- Nav Item - Settings -->
+        Nav Item - Settings
         <li class="nav-item">
           <a class="nav-link" href="#">
             <i class="fas fa-fw fa-cogs"></i>
             <span>Settings</span></a
           >
-        </li>
+        </li> -->
 
         <!-- Nav Item - Logout -->
         <li class="nav-item">
-          <a class="nav-link" href="logout/">
+          <a class="nav-link" href="{% url 'logout' %}">
             <i class="fas fa-fw fa-power-off"></i>
             <span>Logout</span></a
           >
@@ -118,7 +118,6 @@
           top: 0;
           left: 0;
           height: 100%;
-
         }
       </style>
       <!-- End of Sidebar -->
@@ -127,7 +126,6 @@
       <div id="content-wrapper" class="d-flex flex-column">
         <!-- Main Content -->
         <div id="content">
-          <!-- Topbar -->
           <!-- Topbar -->
           <nav
             class="navbar navbar-expand navbar-light bg-white topbar shadow"
@@ -142,7 +140,7 @@
             </button>
 
             <!-- Topbar Search -->
-            <form
+            <!-- <form
               class="d-none d-sm-inline-block form-inline mr-auto ml-md-3 my-2 my-md-0 mw-100 navbar-search"
             >
               <div class="input-group">
@@ -159,7 +157,7 @@
                   </button>
                 </div>
               </div>
-            </form>
+            </form> -->
 
             <!-- Topbar Navbar -->
             <ul class="navbar-nav ml-auto">
@@ -201,7 +199,7 @@
               </li>
 
               <!-- Nav Item - Alerts -->
-              <li class="nav-item dropdown no-arrow mx-1">
+              <!-- <li class="nav-item dropdown no-arrow mx-1">
                 <a
                   class="nav-link dropdown-toggle"
                   href="#"
@@ -211,12 +209,12 @@
                   aria-haspopup="true"
                   aria-expanded="false"
                 >
-                  <i class="fas fa-bell fa-fw"></i>
+                  <i class="fas fa-bell fa-fw"></i> -->
                   <!-- Counter - Alerts -->
-                  <span class="badge badge-danger badge-counter">3+</span>
-                </a>
+                  <!-- <span class="badge badge-danger badge-counter">3+</span>
+                </a> -->
                 <!-- Dropdown - Alerts -->
-                <div
+                <!-- <div
                   class="dropdown-list dropdown-menu dropdown-menu-right shadow animated--grow-in"
                   aria-labelledby="alertsDropdown"
                 >
@@ -263,7 +261,7 @@
                     >Show All Alerts</a
                   >
                 </div>
-              </li>
+              </li> -->
 
               <!-- Nav Item - Messages -->
               <div class="topbar-divider d-none d-sm-block"></div>
@@ -288,7 +286,7 @@
                   />
                 </a>
                 <!-- Dropdown - User Information -->
-                <div
+                <!-- <div
                   class="dropdown-menu dropdown-menu-right shadow animated--grow-in"
                   aria-labelledby="userDropdown"
                 >
@@ -307,7 +305,7 @@
                   <div class="dropdown-divider"></div>
                   <a
                     class="dropdown-item"
-                    href="#"
+                    href="{% url 'logout' %}"
                     data-toggle="modal"
                     data-target="#logoutModal"
                   >
@@ -316,18 +314,15 @@
                     ></i>
                     Logout
                   </a>
-                </div>
+                </div> -->
               </li>
             </ul>
           </nav>
 
           <!-- End of Topbar -->
 
-
-            {% block pagecontent %}
-
-            {% endblock %}
-
+          {% block pagecontent %}
+          {% endblock %}
         </div>
         <!-- Footer -->
         <footer class="sticky-footer bg-white">
