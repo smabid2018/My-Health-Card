@@ -8,9 +8,9 @@
         <h1 class="h3 mb-0 text-gray-800">
             Good 
             {% now "H" as current_hour %}
-            {% if current_hour|add:"0" < 12 %}
+            {% if current_hour|add:"5" < 12 %}
                 Morning
-            {% elif current_hour|add:"0" < 17 %}
+            {% elif current_hour|add:"5" < 17 %}
                 Afternoon
             {% else %}
                 Evening
