@@ -563,7 +563,7 @@ def previousDiagnosis(request):
         # Verify the logged-in user is the assigned doctor
         if request.user != appointment.doctor.user:
             messages.error(request, "You are not authorized to update this appointment.")
-            return redirect('doctor_dashboard')
+            return redirect('login')
 
         # Process submitted diagnoses
         diagnoses = request.POST.getlist('previous_diagnosis[]')
@@ -933,7 +933,7 @@ def techdash(request):
     labtech = LabTechProxy.objects.get(id=request.user.id)
     
     # Filter investigations to include only 'lab_group' and 'lab_sub' types
-    investigations = Investigation.objects.filter(investigation_type__in=['lab_group', 'lab_sub'])
+    investigations = Investigation.objects.filter(investigation_type__in=['lab_group', 'lab_sub']).order_by('-requested_at')
     
     context = {
         'user': request.user,
