@@ -44,7 +44,7 @@ Basic steps (adapt paths and secrets to your environment):
 
 ```bash
 # Clone the repo and enter project root
-git clone https://github.com/<owner>/Health-app.git
+git clone https://github.com/smabid2018/Health-app.git
 cd Health-app
 
 # Create and activate virtual environment
@@ -138,7 +138,7 @@ Issues and pull requests are welcome. Suggested workflow:
 
 ## License & contact
 
-- Project owner / author: Sheikh Md Abid (Student ID: 22068727)
-- License: Please add a license file in the repository (e.g., MIT or preferred institutional license)
+- Project owner / author: Sheikh Md Abid
+- License: 
 
 For questions or collaboration: open an issue in the repository or add contact details in the repo profile.
