@@ -1,4 +1,3 @@
-# Health-app
 # My Health Card
 
 My Health Card is a Django-based web Electronic Medical Record (EMR) with an integrated AI chest X‑ray (CXR) classification pipeline. Built as a final year project to centralize patient records, streamline hospital workflows (admin / doctor / nurse / lab / radiography), and assist radiologists with an automated DenseNet121-based CXR classifier.
